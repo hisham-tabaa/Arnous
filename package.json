@@ -1,0 +1,22 @@
+{
+  "name": "currency-exchange-dashboard",
+  "version": "1.0.0",
+  "description": "Currency exchange dashboard with admin panel and social media integration",
+  "main": "server/index.js",
+  "scripts": {
+    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "server": "cd server && npm run dev",
+    "client": "cd client && npm start",
+    "build": "cd client && npm run build",
+    "start": "cd server && npm start",
+    "railway:build": "npm install && cd client && npm install && npm run build",
+    "railway:start": "cd server && npm install && npm start",
+    "postinstall": "cd server && npm install && cd ../client && npm install"
+  },
+  "keywords": ["currency", "exchange", "dashboard", "social-media"],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}

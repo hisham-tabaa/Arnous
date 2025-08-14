@@ -1,0 +1,44 @@
+{
+  "name": "currency-server",
+  "version": "1.0.0",
+  "description": "Backend server for currency exchange dashboard with MongoDB",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index-simple.js",
+    "dev": "nodemon index-simple.js",
+    "db:init": "node scripts/init-db.js",
+    "db:reset": "node scripts/init-db.js reset",
+    "db:status": "node scripts/init-db.js status",
+    "backup:create": "node scripts/backup-db.js create",
+    "backup:restore": "node scripts/backup-db.js restore",
+    "backup:list": "node scripts/backup-db.js list",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "socket.io": "^4.7.4",
+    "axios": "^1.6.2",
+    "dotenv": "^16.3.1",
+    "fs-extra": "^11.1.1",
+    "mongoose": "^8.0.0",
+    "bcryptjs": "^2.4.3",
+    "jsonwebtoken": "^9.0.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "keywords": [
+    "currency",
+    "exchange",
+    "mongodb",
+    "express",
+    "socket.io",
+    "arnous"
+  ],
+  "author": "Arnous Team",
+  "license": "MIT"
+}
