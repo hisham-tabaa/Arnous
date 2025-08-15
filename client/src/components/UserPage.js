@@ -66,7 +66,7 @@ const UserPage = () => {
     fetchData();
     
     // Initialize socket connection
-    const newSocket = io('http://localhost:5000');
+    const newSocket = io(window.location.origin);
     
     newSocket.on('connect', () => {
       setConnected(true);

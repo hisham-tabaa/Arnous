@@ -126,7 +126,7 @@ const ProtectedAdminDashboard = ({ onLogout }) => {
     initializeData();
     
     // Initialize socket connection
-    const newSocket = io('http://localhost:5000', {
+    const newSocket = io(window.location.origin, {
       auth: { token }
     });
     
