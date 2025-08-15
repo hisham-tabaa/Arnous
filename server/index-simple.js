@@ -478,7 +478,7 @@ async function startServer() {
   try {
     await initializeData();
     
-    server.listen(PORT, () => {
+    server.listen(PORT, '0.0.0.0', () => {
       console.log(`🚀 Server running on port ${PORT}`);
       
       // Detect Railway environment and construct proper URL
