@@ -481,14 +481,40 @@ async function startServer() {
     server.listen(PORT, () => {
       console.log(`🚀 Server running on port ${PORT}`);
       
-      // Use environment variable for base URL or fallback to localhost
-      const baseUrl = process.env.RAILWAY_STATIC_URL || process.env.CLIENT_URL || `http://localhost:${PORT}`;
+      // Detect Railway environment and construct proper URL
+      let baseUrl;
+      
+      // Check for Railway environment variables
+      if (process.env.RAILWAY_STATIC_URL) {
+        baseUrl = process.env.RAILWAY_STATIC_URL;
+      } else if (process.env.RAILWAY_PUBLIC_DOMAIN) {
+        baseUrl = `https://${process.env.RAILWAY_PUBLIC_DOMAIN}`;
+      } else if (process.env.CLIENT_URL) {
+        baseUrl = process.env.CLIENT_URL;
+      } else if (process.env.NODE_ENV === 'production') {
+        // Production environment but no Railway URL set
+        baseUrl = `https://your-app-name.up.railway.app`;
+        console.log('⚠️  WARNING: Running in production but no Railway URL configured!');
+        console.log('🔧 Please set CLIENT_URL environment variable in Railway dashboard');
+      } else {
+        baseUrl = `http://localhost:${PORT}`;
+      }
+      
       const adminUrl = `${baseUrl}/admin`;
       const apiUrl = `${baseUrl}/api/currencies`;
       
       console.log(`📊 Admin Panel: ${adminUrl}`);
       console.log(`💰 Currency API: ${apiUrl}`);
       console.log(`🌐 Base URL: ${baseUrl}`);
+      
+      // Show environment info for debugging
+      console.log(`🔧 Environment: ${process.env.NODE_ENV || 'development'}`);
+      if (process.env.RAILWAY_STATIC_URL) {
+        console.log(`🚄 Railway Static URL: ${process.env.RAILWAY_STATIC_URL}`);
+      }
+      if (process.env.RAILWAY_PUBLIC_DOMAIN) {
+        console.log(`🚄 Railway Domain: ${process.env.RAILWAY_PUBLIC_DOMAIN}`);
+      }
     });
   } catch (error) {
     console.error('❌ Failed to start server:', error);

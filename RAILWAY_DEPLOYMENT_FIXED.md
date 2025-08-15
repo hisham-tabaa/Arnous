@@ -19,6 +19,7 @@ I've updated your project with:
 2. **Updated Railway config** - Uses custom build scripts
 3. **Clean deployment scripts** - Fixes lock file issues
 4. **Added .dockerignore** - Optimizes build performance
+5. **Fixed localhost URL issue** - Server now uses Railway environment variables
 
 ## 🚀 Quick Deployment Steps
 
@@ -42,7 +43,7 @@ npm install
 ### Step 2: Commit and Push Changes
 ```bash
 git add .
-git commit -m "Fix lock files and Railway deployment configuration"
+git commit -m "Fix lock files, Railway deployment configuration, and localhost URLs"
 git push origin main
 ```
 
@@ -61,7 +62,7 @@ Once deployed, go to **Variables** tab and add:
 ```env
 # Server Configuration
 NODE_ENV=production
-PORT=5000
+PORT=8080
 
 # Database (MongoDB Atlas)
 MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/arnous_exchange?retryWrites=true&w=majority
@@ -74,9 +75,19 @@ JWT_EXPIRES_IN=24h
 ADMIN_USERNAME=admin
 ADMIN_PASSWORD=your-secure-admin-password
 
-# Client URL (update after deployment)
+# CLIENT_URL (CRITICAL - Update this after deployment)
+# This should be your actual Railway app URL
 CLIENT_URL=https://your-app-name.up.railway.app
 ```
+
+### Step 5: Update CLIENT_URL After Deployment
+
+**IMPORTANT**: After your first deployment, Railway will give you a URL like:
+`https://your-app-name.up.railway.app`
+
+1. Go to Railway Variables tab
+2. Update `CLIENT_URL` to match your actual Railway app URL
+3. Redeploy the app
 
 ## 🔧 What Was Fixed
 
@@ -93,6 +104,25 @@ CLIENT_URL=https://your-app-name.up.railway.app
 - Root package.json installs dependencies
 - Client builds React app
 - Server starts with proper dependencies
+
+### 4. Localhost URL Issue (NEW FIX!)
+- Server now uses `CLIENT_URL` environment variable
+- Console logs show proper Railway URLs instead of localhost
+- CORS configuration uses Railway domain
+- Port now correctly uses Railway's PORT environment variable
+
+## 🌐 URL Configuration Explained
+
+**Before (Problem):**
+- Server hardcoded to `localhost:8080`
+- CORS only allowed `localhost:3000`
+- Console logs showed localhost URLs
+
+**After (Fixed):**
+- Server uses `process.env.PORT` (Railway sets this)
+- CORS allows your Railway domain
+- Console logs show your actual Railway app URL
+- All URLs are dynamic based on environment
 
 ## 📱 Social Media Integration (Optional)
 
@@ -119,7 +149,9 @@ After deployment:
 - ✅ No more lock file sync errors
 - ✅ Clean Docker build process
 - ✅ Successful Railway deployment
+- ✅ Server shows Railway URLs instead of localhost
 - ✅ Your app accessible at: `https://your-app-name.up.railway.app`
+- ✅ Console logs show proper Railway domain
 
 ## 🆘 If You Still Have Issues
 
@@ -127,10 +159,11 @@ After deployment:
 2. **Verify environment variables** are set correctly
 3. **Ensure MongoDB Atlas** is accessible from Railway
 4. **Check the deployment logs** for specific error messages
+5. **Verify CLIENT_URL** is set to your actual Railway app URL
 
 ## 🎉 Success!
 
-Your currency exchange dashboard should now deploy successfully on Railway without the lock file issues!
+Your currency exchange dashboard should now deploy successfully on Railway without the lock file issues and with proper Railway URLs!
 
 ---
 
@@ -138,5 +171,6 @@ Your currency exchange dashboard should now deploy successfully on Railway witho
 1. Run `deploy-railway.bat` (Windows) or `deploy-railway.sh` (Linux/Mac)
 2. Commit and push changes
 3. Deploy on Railway
-4. Configure environment variables
+4. Configure environment variables (especially CLIENT_URL)
 5. Test your deployed application
+6. Verify URLs show Railway domain instead of localhost
