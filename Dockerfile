@@ -11,12 +11,12 @@ COPY client/package*.json ./client/
 
 # Install server dependencies
 WORKDIR /app/server
-RUN npm ci --only=production
+RUN npm install --production
 
 # Install client dependencies and build
 WORKDIR /app/client
-RUN npm ci --only=production
-COPY client/ .
+RUN npm install --production
+COPY client/ ./
 RUN npm run build
 
 # Go back to app root and copy server files
