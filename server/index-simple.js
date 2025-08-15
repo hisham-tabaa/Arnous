@@ -18,12 +18,12 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIo(server, {
   cors: {
-    origin: "http://localhost:3000",
+    origin: process.env.CLIENT_URL || "http://localhost:3000",
     methods: ["GET", "POST"]
   }
 });
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 8080;
 const DATA_FILE = path.join(__dirname, 'data', 'currencies.json');
 const SESSIONS_FILE = path.join(__dirname, 'data', 'sessions.json');
 
@@ -480,8 +480,15 @@ async function startServer() {
     
     server.listen(PORT, () => {
       console.log(`🚀 Server running on port ${PORT}`);
-      console.log(`📊 Admin Panel: http://localhost:${PORT}`);
-      console.log(`💰 Currency API: http://localhost:${PORT}/api/currencies`);
+      
+      // Use environment variable for base URL or fallback to localhost
+      const baseUrl = process.env.RAILWAY_STATIC_URL || process.env.CLIENT_URL || `http://localhost:${PORT}`;
+      const adminUrl = `${baseUrl}/admin`;
+      const apiUrl = `${baseUrl}/api/currencies`;
+      
+      console.log(`📊 Admin Panel: ${adminUrl}`);
+      console.log(`💰 Currency API: ${apiUrl}`);
+      console.log(`🌐 Base URL: ${baseUrl}`);
     });
   } catch (error) {
     console.error('❌ Failed to start server:', error);
