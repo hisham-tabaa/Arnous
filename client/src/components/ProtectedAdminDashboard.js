@@ -37,7 +37,7 @@ const ProtectedAdminDashboard = ({ onLogout }) => {
   const [selectedPlatform, setSelectedPlatform] = useState('general');
   const [notification, setNotification] = useState(null);
   const [connected, setConnected] = useState(false);
-  const [facebookModal, setFacebookModal] = useState(null);
+  const [socialModal, setSocialModal] = useState(null);
   const navigate = useNavigate();
 
   const currencyInfo = {
@@ -66,12 +66,12 @@ const ProtectedAdminDashboard = ({ onLogout }) => {
     setTimeout(() => setNotification(null), 3000);
   };
 
-  const showFacebookModal = (content, facebookUrl) => {
-    setFacebookModal({ content, facebookUrl });
+  const showSocialModal = (data) => {
+    setSocialModal(data);
   };
 
-  const closeFacebookModal = () => {
-    setFacebookModal(null);
+  const closeSocialModal = () => {
+    setSocialModal(null);
   };
 
   const copyToClipboard = async (text) => {
@@ -275,10 +275,28 @@ const ProtectedAdminDashboard = ({ onLogout }) => {
         { headers: { Authorization: `Bearer ${token}` }}
       );
       
-      // Handle redirect response (for Facebook)
-      if (response.data.redirectUrl) {
+      // Handle modal response (for all platforms)
+      if (response.data.method === 'modal') {
         // Show modal with content and instructions
-        showFacebookModal(response.data.fallbackContent || messageToUse, response.data.redirectUrl);
+        showSocialModal({
+          ...response.data,
+          content: response.data.content || messageToUse
+        });
+      } else if (response.data.redirectUrl) {
+        // Handle Facebook redirect (backward compatibility)
+        showSocialModal({
+          platform: 'Facebook',
+          content: response.data.fallbackContent || messageToUse,
+          platformUrl: response.data.redirectUrl,
+          method: 'modal',
+          instructions: [
+            'Copy the content above',
+            'Click "Open Facebook" to go to Facebook',
+            'Paste the content in Facebook\'s post box',
+            'Add any images or additional text if needed',
+            'Click "Post" on Facebook to publish'
+          ]
+        });
       } else {
         showNotification(`Successfully published to ${platform}!`);
       }
@@ -541,8 +559,8 @@ const ProtectedAdminDashboard = ({ onLogout }) => {
         </div>
       </div>
 
-      {/* Facebook Modal */}
-      {facebookModal && (
+      {/* Social Media Modal */}
+      {socialModal && (
         <div style={{
           position: 'fixed',
           top: 0,
@@ -565,12 +583,24 @@ const ProtectedAdminDashboard = ({ onLogout }) => {
             overflow: 'auto'
           }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-              <h2 style={{ color: '#1877f2', margin: 0, display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <Facebook size={24} />
-                Post to Facebook
+              <h2 style={{ 
+                color: socialModal.platform === 'Facebook' ? '#1877f2' : 
+                       socialModal.platform === 'Instagram' ? '#E4405F' :
+                       socialModal.platform === 'Telegram' ? '#0088cc' :
+                       socialModal.platform === 'WhatsApp' ? '#25D366' : '#333',
+                margin: 0, 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '10px' 
+              }}>
+                {socialModal.platform === 'Facebook' && <Facebook size={24} />}
+                {socialModal.platform === 'Instagram' && <Instagram size={24} />}
+                {socialModal.platform === 'Telegram' && <MessageCircle size={24} />}
+                {socialModal.platform === 'WhatsApp' && <Phone size={24} />}
+                Post to {socialModal.platform}
               </h2>
               <button 
-                onClick={closeFacebookModal}
+                onClick={closeSocialModal}
                 style={{
                   background: 'none',
                   border: 'none',
@@ -596,25 +626,33 @@ const ProtectedAdminDashboard = ({ onLogout }) => {
                 maxHeight: '200px',
                 overflow: 'auto'
               }}>
-                {facebookModal.content}
+                {socialModal.content}
               </div>
             </div>
 
             <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
               <button
-                onClick={() => copyToClipboard(facebookModal.content)}
+                onClick={() => copyToClipboard(socialModal.content)}
                 className="btn btn-secondary"
                 style={{ flex: 1 }}
               >
                 📋 Copy Content
               </button>
               <button
-                onClick={() => window.open(facebookModal.facebookUrl, '_blank')}
-                className="btn btn-facebook"
+                onClick={() => window.open(socialModal.platformUrl, '_blank')}
+                className={`btn ${
+                  socialModal.platform === 'Facebook' ? 'btn-facebook' :
+                  socialModal.platform === 'Instagram' ? 'btn-instagram' :
+                  socialModal.platform === 'Telegram' ? 'btn-telegram' :
+                  socialModal.platform === 'WhatsApp' ? 'btn-whatsapp' : 'btn-primary'
+                }`}
                 style={{ flex: 1 }}
               >
-                <Facebook size={16} style={{ marginRight: '8px' }} />
-                Open Facebook
+                {socialModal.platform === 'Facebook' && <Facebook size={16} style={{ marginRight: '8px' }} />}
+                {socialModal.platform === 'Instagram' && <Instagram size={16} style={{ marginRight: '8px' }} />}
+                {socialModal.platform === 'Telegram' && <MessageCircle size={16} style={{ marginRight: '8px' }} />}
+                {socialModal.platform === 'WhatsApp' && <Phone size={16} style={{ marginRight: '8px' }} />}
+                Open {socialModal.platform}
               </button>
             </div>
 
@@ -627,12 +665,22 @@ const ProtectedAdminDashboard = ({ onLogout }) => {
             }}>
               <strong>📝 Instructions:</strong>
               <ol style={{ margin: '10px 0 0 20px', padding: 0 }}>
-                <li>Copy the content above (or click "Copy Content")</li>
-                <li>Click "Open Facebook" to go to Facebook</li>
-                <li>Paste the content in Facebook's post box</li>
-                <li>Add any images or additional text if needed</li>
-                <li>Click "Post" on Facebook to publish</li>
+                {socialModal.instructions && socialModal.instructions.map((instruction, index) => (
+                  <li key={index}>{instruction}</li>
+                ))}
               </ol>
+              {socialModal.note && (
+                <div style={{ 
+                  marginTop: '10px', 
+                  padding: '10px', 
+                  backgroundColor: '#fff3cd', 
+                  color: '#856404',
+                  borderRadius: '5px',
+                  fontSize: '13px'
+                }}>
+                  <strong>💡 Note:</strong> {socialModal.note}
+                </div>
+              )}
             </div>
           </div>
         </div>

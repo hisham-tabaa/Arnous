@@ -8,6 +8,35 @@ class InstagramAPI {
   }
 
   async publishPost(message) {
+    // Return modal data for copy-paste functionality
+    return this.generateInstagramModalData(message);
+  }
+
+  generateInstagramModalData(message) {
+    // Instagram posting URLs and instructions
+    const instagramUrl = 'https://www.instagram.com/';
+    
+    return {
+      success: true,
+      method: 'modal',
+      platform: 'Instagram',
+      content: message,
+      platformUrl: instagramUrl,
+      instructions: [
+        'Copy the content above',
+        'Click "Open Instagram" to go to Instagram',
+        'Click the "+" button to create a new post',
+        'Add your image or create a story',
+        'Paste the content as your caption',
+        'Add hashtags if desired',
+        'Click "Share" to publish'
+      ],
+      note: 'Instagram requires images or videos. You can post this as a story or as a caption for your photo/video.'
+    };
+  }
+
+  // Keep the old method for backward compatibility
+  async publishPostDirect(message) {
     // If no access token is provided, simulate the posting
     if (!this.accessToken || !this.instagramAccountId) {
       console.log('Instagram API - Simulated posting (no credentials provided)');

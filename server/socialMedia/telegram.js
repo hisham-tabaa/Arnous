@@ -8,6 +8,35 @@ class TelegramAPI {
   }
 
   async publishPost(message) {
+    // Return modal data for copy-paste functionality
+    return this.generateTelegramModalData(message);
+  }
+
+  generateTelegramModalData(message) {
+    // Telegram posting URLs and instructions
+    const telegramUrl = 'https://web.telegram.org/';
+    
+    return {
+      success: true,
+      method: 'modal',
+      platform: 'Telegram',
+      content: message,
+      platformUrl: telegramUrl,
+      instructions: [
+        'Copy the content above',
+        'Click "Open Telegram" to go to Telegram Web',
+        'Navigate to your channel or group',
+        'Click in the message input box',
+        'Paste the content',
+        'Add any formatting (bold, italic) if desired',
+        'Press Enter or click Send to publish'
+      ],
+      note: 'You can also use Telegram Desktop app or mobile app to post this content.'
+    };
+  }
+
+  // Keep the old method for backward compatibility
+  async publishPostDirect(message) {
     // If no bot token is provided, simulate the posting
     if (!this.botToken || !this.channelId) {
       console.log('Telegram API - Simulated posting (no credentials provided)');

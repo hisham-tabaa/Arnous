@@ -9,6 +9,35 @@ class WhatsAppAPI {
   }
 
   async publishToStatus(message) {
+    // Return modal data for copy-paste functionality
+    return this.generateWhatsAppModalData(message);
+  }
+
+  generateWhatsAppModalData(message) {
+    // WhatsApp posting URLs and instructions
+    const whatsappUrl = 'https://web.whatsapp.com/';
+    
+    return {
+      success: true,
+      method: 'modal',
+      platform: 'WhatsApp',
+      content: message,
+      platformUrl: whatsappUrl,
+      instructions: [
+        'Copy the content above',
+        'Click "Open WhatsApp" to go to WhatsApp Web',
+        'Select your contact, group, or broadcast list',
+        'Click in the message input box',
+        'Paste the content',
+        'Add emojis if desired',
+        'Press Enter or click Send to publish'
+      ],
+      note: 'You can post this to your WhatsApp Status, send to groups, or broadcast to multiple contacts.'
+    };
+  }
+
+  // Keep the old method for backward compatibility
+  async publishToStatusDirect(message) {
     // WhatsApp Status API is limited and requires special permissions
     // For now, we'll simulate or send to a broadcast list
     
