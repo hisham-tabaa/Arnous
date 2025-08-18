@@ -354,7 +354,12 @@ app.post('/api/currencies', verifyAdminAuth, async (req, res) => {
 app.post('/api/publish/facebook', verifyAdminAuth, async (req, res) => {
   try {
     const { message } = req.body;
-    const result = await FacebookAPI.publishPost(message);
+    // Create FacebookAPI instance
+    const facebookAPI = new FacebookAPI(
+      process.env.FACEBOOK_ACCESS_TOKEN,
+      process.env.FACEBOOK_PAGE_ID
+    );
+    const result = await facebookAPI.publishPost(message);
     res.json(result);
   } catch (error) {
     console.error('Facebook publish error:', error);
@@ -365,7 +370,12 @@ app.post('/api/publish/facebook', verifyAdminAuth, async (req, res) => {
 app.post('/api/publish/instagram', verifyAdminAuth, async (req, res) => {
   try {
     const { message } = req.body;
-    const result = await InstagramAPI.publishPost(message);
+    // Create InstagramAPI instance
+    const instagramAPI = new InstagramAPI(
+      process.env.FACEBOOK_ACCESS_TOKEN,
+      process.env.INSTAGRAM_ACCOUNT_ID
+    );
+    const result = await instagramAPI.publishPost(message);
     res.json(result);
   } catch (error) {
     console.error('Instagram publish error:', error);
@@ -376,7 +386,12 @@ app.post('/api/publish/instagram', verifyAdminAuth, async (req, res) => {
 app.post('/api/publish/telegram', verifyAdminAuth, async (req, res) => {
   try {
     const { message } = req.body;
-    const result = await TelegramAPI.sendMessage(message);
+    // Create TelegramAPI instance
+    const telegramAPI = new TelegramAPI(
+      process.env.TELEGRAM_BOT_TOKEN,
+      process.env.TELEGRAM_CHANNEL_ID
+    );
+    const result = await telegramAPI.publishPost(message);
     res.json(result);
   } catch (error) {
     console.error('Telegram publish error:', error);
@@ -387,7 +402,13 @@ app.post('/api/publish/telegram', verifyAdminAuth, async (req, res) => {
 app.post('/api/publish/whatsapp', verifyAdminAuth, async (req, res) => {
   try {
     const { message } = req.body;
-    const result = await WhatsAppAPI.sendMessage(message);
+    // Create WhatsAppAPI instance
+    const whatsappAPI = new WhatsAppAPI(
+      process.env.WHATSAPP_ACCESS_TOKEN,
+      process.env.WHATSAPP_PHONE_NUMBER_ID,
+      process.env.WHATSAPP_BROADCAST_LIST_ID
+    );
+    const result = await whatsappAPI.publishToStatus(message);
     res.json(result);
   } catch (error) {
     console.error('WhatsApp publish error:', error);
