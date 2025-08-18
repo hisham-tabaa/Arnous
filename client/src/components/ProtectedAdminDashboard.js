@@ -473,9 +473,9 @@ const ProtectedAdminDashboard = ({ onLogout }) => {
                 }}
               >
                 <option value="professional">🏦 Professional</option>
-                <option value="modern">✨ Modern</option>
-                <option value="elegant">💎 Elegant</option>
-                <option value="business">🏢 Business</option>
+                <option value="casual">🔥 Casual</option>
+                <option value="minimal">📋 Minimal</option>
+                <option value="detailed">📊 Detailed</option>
               </select>
             </div>
             
@@ -654,6 +654,15 @@ const ProtectedAdminDashboard = ({ onLogout }) => {
                 {socialModal.platform === 'WhatsApp' && <Phone size={16} style={{ marginRight: '8px' }} />}
                 Open {socialModal.platform}
               </button>
+              {socialModal.platform === 'Instagram' && socialModal.alternativeUrl && (
+                <button
+                  onClick={() => window.open(socialModal.alternativeUrl, '_blank')}
+                  className="btn btn-instagram"
+                  style={{ flex: 1 }}
+                >
+                  📸 Instagram Stories
+                </button>
+              )}
             </div>
 
             <div style={{

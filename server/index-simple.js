@@ -420,7 +420,9 @@ app.post('/api/publish/whatsapp', verifyAdminAuth, async (req, res) => {
 app.post('/api/generate-message', verifyAdminAuth, async (req, res) => {
   try {
     const currenciesArray = await readCurrencyData();
-    const { template = 'professional' } = req.body;
+    const { template = 'professional', platform = 'general' } = req.body;
+    
+    console.log(`Generating message with template: ${template}, platform: ${platform}`);
     
     const message = generateSocialMediaMessage(currenciesArray, template);
     res.json({ message });

@@ -13,25 +13,25 @@ class InstagramAPI {
   }
 
   generateInstagramModalData(message) {
-    // Instagram posting URLs - try to open create post directly
-    const instagramUrl = 'https://www.instagram.com/accounts/activity/';
-    const instagramCreateUrl = 'https://www.instagram.com/create/select/';
+    // Instagram posting URLs - use main Instagram page
+    const instagramUrl = 'https://www.instagram.com/';
+    const instagramStoriesUrl = 'https://www.instagram.com/stories/camera/';
     
     return {
       success: true,
       method: 'modal',
       platform: 'Instagram',
       content: message,
-      platformUrl: instagramCreateUrl,
+      platformUrl: instagramUrl,
+      alternativeUrl: instagramStoriesUrl,
       instructions: [
         'Copy the content above',
         'Click "Open Instagram" to go to Instagram',
-        'Upload your image or video',
-        'Paste the content as your caption',
-        'Add hashtags and location if desired',
-        'Click "Share" to publish'
+        'Option 1 - Stories: Click "+" → Story → Create → Add text → Paste content → Share',
+        'Option 2 - Post: Click "+" → Post → Upload image → Add caption → Paste content → Share',
+        'Option 3 - Reels: Click "+" → Reel → Record/Upload → Add caption → Paste content → Share'
       ],
-      note: 'Instagram requires images or videos. The link will try to open the post creation page directly.'
+      note: 'Instagram requires visual content. Stories are easiest for text-only posts and disappear after 24 hours. For permanent posts, upload an image with your text as caption.'
     };
   }
 
