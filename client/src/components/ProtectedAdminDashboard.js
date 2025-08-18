@@ -225,6 +225,18 @@ const ProtectedAdminDashboard = ({ onLogout }) => {
     setLoading(false);
   };
 
+  // Helper function to generate platform-specific message
+  const generatePlatformMessage = async (platform) => {
+    const token = localStorage.getItem('adminToken');
+    const msgResponse = await axios.post('/api/generate-message', {
+      template: selectedTemplate,
+      platform: platform
+    }, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    return msgResponse.data.message;
+  };
+
   const publishToSocial = async (platform) => {
     setPublishing(prev => ({ ...prev, [platform]: true }));
     
@@ -236,21 +248,22 @@ const ProtectedAdminDashboard = ({ onLogout }) => {
         return;
       }
       
-      // Generate platform-specific message before publishing
-      const msgResponse = await axios.post('/api/generate-message', {
-        template: selectedTemplate,
-        platform: platform
-      }, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      // For Facebook, use the current message preview instead of generating new one
+      const messageToUse = platform === 'facebook' ? message : await generatePlatformMessage(platform);
       
-      const platformMessage = msgResponse.data.message;
-      
-      await axios.post(`/api/publish/${platform}`, 
-        { message: platformMessage },
+      const response = await axios.post(`/api/publish/${platform}`, 
+        { message: messageToUse },
         { headers: { Authorization: `Bearer ${token}` }}
       );
-      showNotification(`Successfully published to ${platform}!`);
+      
+      // Handle redirect response (for Facebook)
+      if (response.data.redirectUrl) {
+        showNotification(`Opening Facebook to publish your post...`, 'info');
+        // Open Facebook in new tab with pre-filled content
+        window.open(response.data.redirectUrl, '_blank');
+      } else {
+        showNotification(`Successfully published to ${platform}!`);
+      }
     } catch (error) {
       console.error(`Error publishing to ${platform}:`, error);
       if (error.response?.status === 401) {

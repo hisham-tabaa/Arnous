@@ -1,49 +1,160 @@
 const axios = require('axios');
+const fs = require('fs').promises;
+const path = require('path');
 
 class FacebookAPI {
   constructor(accessToken, pageId) {
     this.accessToken = accessToken;
     this.pageId = pageId;
     this.baseURL = 'https://graph.facebook.com/v18.0';
+    
+    // Detect posting method based on environment variables
+    this.method = this.detectPostingMethod();
+    this.setupCredentials();
+  }
+
+  detectPostingMethod() {
+    if (process.env.ZAPIER_FACEBOOK_WEBHOOK) {
+      return 'zapier';
+    } else if (process.env.BUFFER_ACCESS_TOKEN) {
+      return 'buffer';
+    } else if (process.env.FACEBOOK_METHOD === 'manual') {
+      return 'manual';
+    } else if (this.accessToken && this.pageId) {
+      return 'direct';
+    } else {
+      return 'manual';
+    }
+  }
+
+  setupCredentials() {
+    switch(this.method) {
+      case 'zapier':
+        this.webhookUrl = process.env.ZAPIER_FACEBOOK_WEBHOOK;
+        break;
+      case 'buffer':
+        this.bufferToken = process.env.BUFFER_ACCESS_TOKEN;
+        this.bufferProfileId = process.env.BUFFER_PROFILE_ID;
+        break;
+    }
   }
 
   async publishPost(message) {
-    // If no access token is provided, simulate the posting
-    if (!this.accessToken || !this.pageId) {
-      console.log('Facebook API - Simulated posting (no credentials provided)');
-      console.log('Message:', message);
-      
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      return {
-        success: true,
-        postId: `fb_sim_${Date.now()}`,
-        message: 'Posted successfully to Facebook (simulated)'
-      };
+    // Generate Facebook redirect URL with pre-filled content
+    return this.generateFacebookRedirectUrl(message);
+  }
+
+  generateFacebookRedirectUrl(message) {
+    // Facebook's share dialog URL with pre-filled text
+    const encodedMessage = encodeURIComponent(message);
+    const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=&quote=${encodedMessage}`;
+    
+    return {
+      success: true,
+      method: 'redirect',
+      redirectUrl: facebookUrl,
+      message: 'Redirecting to Facebook with pre-filled content',
+      instructions: 'You will be redirected to Facebook where you can review and publish the post'
+    };
+  }
+
+  // Zapier webhook method (works globally)
+  async publishViaZapier(message) {
+    if (!this.webhookUrl) {
+      throw new Error('Zapier webhook URL not configured');
     }
 
+    const response = await axios.post(this.webhookUrl, {
+      message: message,
+      timestamp: new Date().toISOString(),
+      platform: 'facebook'
+    });
+
+    return {
+      success: true,
+      postId: `zapier_${Date.now()}`,
+      message: 'Post sent to Facebook via Zapier automation',
+      method: 'zapier'
+    };
+  }
+
+  // Buffer API method
+  async publishViaBuffer(message) {
+    if (!this.bufferToken || !this.bufferProfileId) {
+      throw new Error('Buffer credentials not configured');
+    }
+
+    const response = await axios.post('https://api.bufferapp.com/1/updates/create.json', {
+      text: message,
+      profile_ids: [this.bufferProfileId],
+      access_token: this.bufferToken
+    });
+
+    return {
+      success: true,
+      postId: response.data.updates[0].id,
+      message: 'Post scheduled on Facebook via Buffer',
+      method: 'buffer'
+    };
+  }
+
+  // Manual posting - save content for copy-paste
+  async saveForManualPost(message) {
     try {
-      const response = await axios.post(
-        `${this.baseURL}/${this.pageId}/feed`,
-        {
-          message: message,
-          access_token: this.accessToken
-        }
-      );
+      const postsDir = path.join(__dirname, '../data/manual-posts');
+      await fs.mkdir(postsDir, { recursive: true });
+      
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+      const filename = `facebook-post-${timestamp}.txt`;
+      const filepath = path.join(postsDir, filename);
+      
+      const content = `📘 FACEBOOK POST - ${new Date().toLocaleString()}\n` +
+                     `${'='.repeat(50)}\n\n` +
+                     `${message}\n\n` +
+                     `${'='.repeat(50)}\n` +
+                     `Instructions:\n` +
+                     `1. Copy the message above\n` +
+                     `2. Go to your Facebook page\n` +
+                     `3. Paste and publish the post\n` +
+                     `4. Delete this file after posting\n`;
+      
+      await fs.writeFile(filepath, content, 'utf8');
+      
+      console.log(`📁 Facebook post saved for manual posting: ${filepath}`);
       
       return {
         success: true,
-        postId: response.data.id,
-        message: 'Posted successfully to Facebook'
+        postId: `manual_${Date.now()}`,
+        message: 'Post content saved for manual posting to Facebook',
+        method: 'manual',
+        filepath: filepath,
+        instructions: 'Check server/data/manual-posts/ folder for post content'
       };
     } catch (error) {
-      console.error('Facebook posting error:', error.response?.data || error.message);
-      return {
-        success: false,
-        error: error.response?.data?.error?.message || 'Failed to post to Facebook'
-      };
+      throw new Error(`Failed to save manual post: ${error.message}`);
     }
+  }
+
+  // Direct Facebook API (for regions with access)
+  async publishViaDirect(message) {
+    if (!this.accessToken || !this.pageId) {
+      throw new Error('Facebook API credentials not configured');
+    }
+
+    const response = await axios.post(
+      `${this.baseURL}/${this.pageId}/feed`,
+      {
+        message: message,
+        access_token: this.accessToken
+      }
+    );
+    
+    return {
+      success: true,
+      postId: response.data.id,
+      message: 'Posted successfully to Facebook via API',
+      method: 'direct'
+    };
   }
 
   async testConnection() {
