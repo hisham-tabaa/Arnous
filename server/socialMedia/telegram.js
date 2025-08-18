@@ -14,7 +14,14 @@ class TelegramAPI {
 
   generateTelegramModalData(message) {
     // Telegram posting URLs and instructions
-    const telegramUrl = 'https://web.telegram.org/';
+    let telegramUrl = 'https://web.telegram.org/';
+    
+    // If we have a channel ID, try to create a direct link
+    if (this.channelId) {
+      const channelName = this.channelId.startsWith('@') ? this.channelId.substring(1) : this.channelId;
+      // Try to create direct channel link
+      telegramUrl = `https://web.telegram.org/k/#${channelName}`;
+    }
     
     return {
       success: true,
@@ -24,14 +31,14 @@ class TelegramAPI {
       platformUrl: telegramUrl,
       instructions: [
         'Copy the content above',
-        'Click "Open Telegram" to go to Telegram Web',
-        'Navigate to your channel or group',
+        'Click "Open Telegram" to go to your channel',
+        'If not redirected to your channel, search for your channel name',
         'Click in the message input box',
         'Paste the content',
         'Add any formatting (bold, italic) if desired',
         'Press Enter or click Send to publish'
       ],
-      note: 'You can also use Telegram Desktop app or mobile app to post this content.'
+      note: 'You can also use Telegram Desktop app or mobile app. Make sure you have admin rights to post in the channel.'
     };
   }
 

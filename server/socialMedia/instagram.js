@@ -13,25 +13,25 @@ class InstagramAPI {
   }
 
   generateInstagramModalData(message) {
-    // Instagram posting URLs and instructions
-    const instagramUrl = 'https://www.instagram.com/';
+    // Instagram posting URLs - try to open create post directly
+    const instagramUrl = 'https://www.instagram.com/accounts/activity/';
+    const instagramCreateUrl = 'https://www.instagram.com/create/select/';
     
     return {
       success: true,
       method: 'modal',
       platform: 'Instagram',
       content: message,
-      platformUrl: instagramUrl,
+      platformUrl: instagramCreateUrl,
       instructions: [
         'Copy the content above',
         'Click "Open Instagram" to go to Instagram',
-        'Click the "+" button to create a new post',
-        'Add your image or create a story',
+        'Upload your image or video',
         'Paste the content as your caption',
-        'Add hashtags if desired',
+        'Add hashtags and location if desired',
         'Click "Share" to publish'
       ],
-      note: 'Instagram requires images or videos. You can post this as a story or as a caption for your photo/video.'
+      note: 'Instagram requires images or videos. The link will try to open the post creation page directly.'
     };
   }
 

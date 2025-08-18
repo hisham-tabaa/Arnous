@@ -16,6 +16,7 @@ class WhatsAppAPI {
   generateWhatsAppModalData(message) {
     // WhatsApp posting URLs and instructions
     const whatsappUrl = 'https://web.whatsapp.com/';
+    const whatsappStatusUrl = 'https://web.whatsapp.com/send?text=' + encodeURIComponent(message);
     
     return {
       success: true,
@@ -23,16 +24,16 @@ class WhatsAppAPI {
       platform: 'WhatsApp',
       content: message,
       platformUrl: whatsappUrl,
+      alternativeUrl: whatsappStatusUrl,
       instructions: [
         'Copy the content above',
         'Click "Open WhatsApp" to go to WhatsApp Web',
-        'Select your contact, group, or broadcast list',
-        'Click in the message input box',
-        'Paste the content',
-        'Add emojis if desired',
-        'Press Enter or click Send to publish'
+        'For Status: Click Status → Text → Paste content → Share',
+        'For Groups: Select your group → Paste in chat → Send',
+        'For Broadcast: Select Broadcast List → Paste → Send',
+        'For individual contacts: Search contact → Paste → Send'
       ],
-      note: 'You can post this to your WhatsApp Status, send to groups, or broadcast to multiple contacts.'
+      note: 'WhatsApp Status posts disappear after 24 hours. For permanent posts, send to groups or broadcast lists.'
     };
   }
 

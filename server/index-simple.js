@@ -441,24 +441,76 @@ function generateSocialMediaMessage(currencies, template = 'professional') {
     minute: '2-digit'
   });
   
-  let message = `💰 Arnous Exchange - Currency Rates\n📅 ${formattedDate}\n\n`;
-  
   // Ensure currencies is an array
   if (!Array.isArray(currencies)) {
     console.error('Currencies is not an array:', currencies);
-    return message + `❌ Error: Unable to load currency data`;
+    return `❌ Error: Unable to load currency data`;
   }
   
-  currencies.forEach(currency => {
-    const buyRate = Number(currency.buyRate).toLocaleString('en-US');
-    const sellRate = Number(currency.sellRate).toLocaleString('en-US');
-    
-    message += `💵 ${currency.code} - ${currency.name}\n`;
-    message += `   📈 Buy: ${buyRate} IQD\n`;
-    message += `   📉 Sell: ${sellRate} IQD\n\n`;
-  });
+  let message = '';
   
-  message += `🏢 Arnous Exchange\n📞 Contact us for the best rates!`;
+  switch(template) {
+    case 'professional':
+      message = `💰 Arnous Exchange - Currency Rates\n📅 ${formattedDate}\n\n`;
+      currencies.forEach(currency => {
+        const buyRate = Number(currency.buyRate).toLocaleString('en-US');
+        const sellRate = Number(currency.sellRate).toLocaleString('en-US');
+        message += `💵 ${currency.code} - ${currency.name}\n`;
+        message += `   📈 Buy: ${buyRate} SYP\n`;
+        message += `   📉 Sell: ${sellRate} SYP\n\n`;
+      });
+      message += `🏢 Arnous Exchange\n📞 Contact us for the best rates!`;
+      break;
+      
+    case 'casual':
+      message = `🔥 Fresh Currency Rates! 🔥\n⏰ Updated: ${formattedDate}\n\n`;
+      currencies.forEach(currency => {
+        const buyRate = Number(currency.buyRate).toLocaleString('en-US');
+        const sellRate = Number(currency.sellRate).toLocaleString('en-US');
+        message += `${currency.code === 'USD' ? '🇺🇸' : currency.code === 'EUR' ? '🇪🇺' : currency.code === 'GBP' ? '🇬🇧' : '🇹🇷'} ${currency.code}: Buy ${buyRate} | Sell ${sellRate} SYP\n`;
+      });
+      message += `\n💸 Arnous Exchange - Your trusted partner!\n🚀 Best rates in town!`;
+      break;
+      
+    case 'minimal':
+      message = `Arnous Exchange Rates - ${formattedDate}\n\n`;
+      currencies.forEach(currency => {
+        const buyRate = Number(currency.buyRate).toLocaleString('en-US');
+        const sellRate = Number(currency.sellRate).toLocaleString('en-US');
+        message += `${currency.code}: ${buyRate} / ${sellRate} SYP\n`;
+      });
+      message += `\nArnous Exchange`;
+      break;
+      
+    case 'detailed':
+      message = `📊 ARNOUS EXCHANGE - DAILY RATES 📊\n`;
+      message += `📅 ${formattedDate}\n`;
+      message += `${'='.repeat(35)}\n\n`;
+      currencies.forEach(currency => {
+        const buyRate = Number(currency.buyRate).toLocaleString('en-US');
+        const sellRate = Number(currency.sellRate).toLocaleString('en-US');
+        message += `💰 ${currency.name} (${currency.code})\n`;
+        message += `   🟢 BUY:  ${buyRate} SYP\n`;
+        message += `   🔴 SELL: ${sellRate} SYP\n`;
+        message += `   💹 Spread: ${(currency.sellRate - currency.buyRate).toLocaleString('en-US')} SYP\n\n`;
+      });
+      message += `🏦 ARNOUS EXCHANGE\n`;
+      message += `📞 Call us for live rates\n`;
+      message += `⚡ Fast & Reliable Service`;
+      break;
+      
+    default:
+      // Fallback to professional
+      message = `💰 Arnous Exchange - Currency Rates\n📅 ${formattedDate}\n\n`;
+      currencies.forEach(currency => {
+        const buyRate = Number(currency.buyRate).toLocaleString('en-US');
+        const sellRate = Number(currency.sellRate).toLocaleString('en-US');
+        message += `💵 ${currency.code} - ${currency.name}\n`;
+        message += `   📈 Buy: ${buyRate} SYP\n`;
+        message += `   📉 Sell: ${sellRate} SYP\n\n`;
+      });
+      message += `🏢 Arnous Exchange\n📞 Contact us for the best rates!`;
+  }
   
   return message;
 }
