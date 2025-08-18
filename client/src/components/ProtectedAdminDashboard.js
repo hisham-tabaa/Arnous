@@ -37,6 +37,7 @@ const ProtectedAdminDashboard = ({ onLogout }) => {
   const [selectedPlatform, setSelectedPlatform] = useState('general');
   const [notification, setNotification] = useState(null);
   const [connected, setConnected] = useState(false);
+  const [facebookModal, setFacebookModal] = useState(null);
   const navigate = useNavigate();
 
   const currencyInfo = {
@@ -63,6 +64,24 @@ const ProtectedAdminDashboard = ({ onLogout }) => {
   const showNotification = (text, type = 'success') => {
     setNotification({ text, type });
     setTimeout(() => setNotification(null), 3000);
+  };
+
+  const showFacebookModal = (content, facebookUrl) => {
+    setFacebookModal({ content, facebookUrl });
+  };
+
+  const closeFacebookModal = () => {
+    setFacebookModal(null);
+  };
+
+  const copyToClipboard = async (text) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      showNotification('Content copied to clipboard!', 'success');
+    } catch (err) {
+      console.error('Failed to copy text: ', err);
+      showNotification('Failed to copy content', 'error');
+    }
   };
 
   useEffect(() => {
@@ -258,9 +277,8 @@ const ProtectedAdminDashboard = ({ onLogout }) => {
       
       // Handle redirect response (for Facebook)
       if (response.data.redirectUrl) {
-        showNotification(`Opening Facebook to publish your post...`, 'info');
-        // Open Facebook in new tab with pre-filled content
-        window.open(response.data.redirectUrl, '_blank');
+        // Show modal with content and instructions
+        showFacebookModal(response.data.fallbackContent || messageToUse, response.data.redirectUrl);
       } else {
         showNotification(`Successfully published to ${platform}!`);
       }
@@ -522,6 +540,113 @@ const ProtectedAdminDashboard = ({ onLogout }) => {
           </div>
         </div>
       </div>
+
+      {/* Facebook Modal */}
+      {facebookModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.8)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000
+        }}>
+          <div style={{
+            backgroundColor: 'white',
+            borderRadius: '15px',
+            padding: '30px',
+            maxWidth: '600px',
+            width: '90%',
+            maxHeight: '80vh',
+            overflow: 'auto'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+              <h2 style={{ color: '#1877f2', margin: 0, display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <Facebook size={24} />
+                Post to Facebook
+              </h2>
+              <button 
+                onClick={closeFacebookModal}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  fontSize: '24px',
+                  cursor: 'pointer',
+                  color: '#666'
+                }}
+              >
+                ×
+              </button>
+            </div>
+            
+            <div style={{ marginBottom: '20px' }}>
+              <h4 style={{ color: '#333', marginBottom: '10px' }}>📋 Post Content:</h4>
+              <div style={{
+                backgroundColor: '#f8f9fa',
+                border: '1px solid #e9ecef',
+                borderRadius: '8px',
+                padding: '15px',
+                fontSize: '14px',
+                lineHeight: '1.5',
+                whiteSpace: 'pre-wrap',
+                maxHeight: '200px',
+                overflow: 'auto'
+              }}>
+                {facebookModal.content}
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
+              <button
+                onClick={() => copyToClipboard(facebookModal.content)}
+                className="btn btn-secondary"
+                style={{ flex: 1 }}
+              >
+                📋 Copy Content
+              </button>
+              <button
+                onClick={() => window.open(facebookModal.facebookUrl, '_blank')}
+                className="btn btn-facebook"
+                style={{ flex: 1 }}
+              >
+                <Facebook size={16} style={{ marginRight: '8px' }} />
+                Open Facebook
+              </button>
+            </div>
+
+            <div style={{
+              backgroundColor: '#e3f2fd',
+              padding: '15px',
+              borderRadius: '8px',
+              fontSize: '14px',
+              color: '#1565c0'
+            }}>
+              <strong>📝 Instructions:</strong>
+              <ol style={{ margin: '10px 0 0 20px', padding: 0 }}>
+                <li>Copy the content above (or click "Copy Content")</li>
+                <li>Click "Open Facebook" to go to Facebook</li>
+                <li>Paste the content in Facebook's post box</li>
+                <li>Add any images or additional text if needed</li>
+                <li>Click "Post" on Facebook to publish</li>
+              </ol>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Notification */}
+      {notification && (
+        <div className={`notification ${notification.type}`}>
+          {notification.type === 'success' && <CheckCircle size={16} />}
+          {notification.type === 'error' && <AlertCircle size={16} />}
+          {notification.type === 'info' && <AlertCircle size={16} />}
+          {notification.text}
+        </div>
+      )}
     </div>
   );
 };
