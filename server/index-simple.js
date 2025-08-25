@@ -26,14 +26,16 @@ const io = socketIo(server, {
 const PORT = process.env.PORT || 8080;
 const DATA_FILE = path.join(__dirname, 'data', 'currencies.json');
 const SESSIONS_FILE = path.join(__dirname, 'data', 'sessions.json');
+const ADVICE_FILE = path.join(__dirname, 'data', 'advice.json');
 
 // Middleware
 app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, '../client/build')));
 
-// In-memory storage for admin sessions
+// In-memory storage for admin sessions and advice
 let activeSessions = new Map();
+let adviceData = [];
 
 // Admin credentials
 const ADMIN_CREDENTIALS = {
@@ -46,6 +48,7 @@ async function initializeData() {
   try {
     await fs.ensureDir(path.dirname(DATA_FILE));
     await fs.ensureDir(path.dirname(SESSIONS_FILE));
+    await fs.ensureDir(path.dirname(ADVICE_FILE));
     
     if (!await fs.pathExists(DATA_FILE)) {
       const defaultCurrencies = [
@@ -90,8 +93,13 @@ async function initializeData() {
     if (!await fs.pathExists(SESSIONS_FILE)) {
       await fs.writeJson(SESSIONS_FILE, {}, { spaces: 2 });
     }
+
+    if (!await fs.pathExists(ADVICE_FILE)) {
+      await fs.writeJson(ADVICE_FILE, [], { spaces: 2 });
+    }
     
     await loadSessions();
+    await loadAdviceData();
     
   } catch (error) {
     console.error('❌ Error initializing data:', error);
@@ -117,6 +125,26 @@ async function saveSessions() {
     await fs.writeJson(SESSIONS_FILE, sessionsObj, { spaces: 2 });
   } catch (error) {
     console.error('Error saving sessions:', error);
+  }
+}
+
+// Load advice data from file
+async function loadAdviceData() {
+  try {
+    if (await fs.pathExists(ADVICE_FILE)) {
+      adviceData = await fs.readJson(ADVICE_FILE);
+    }
+  } catch (error) {
+    console.error('Error loading advice data:', error);
+  }
+}
+
+// Save advice data to file
+async function saveAdviceData() {
+  try {
+    await fs.writeJson(ADVICE_FILE, adviceData, { spaces: 2 });
+  } catch (error) {
+    console.error('Error saving advice data:', error);
   }
 }
 
@@ -347,6 +375,229 @@ app.post('/api/currencies', verifyAdminAuth, async (req, res) => {
   } catch (error) {
     console.error('Error updating currencies:', error);
     res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Advice Routes
+app.get('/api/advice', async (req, res) => {
+  try {
+    res.json(adviceData);
+  } catch (error) {
+    console.error('Error fetching advice:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+app.post('/api/advice', verifyAdminAuth, async (req, res) => {
+  try {
+    const { title, content, type, priority, isActive } = req.body;
+    
+    if (!title || !content) {
+      return res.status(400).json({ 
+        error: 'Title and content are required',
+        code: 'MISSING_FIELDS'
+      });
+    }
+
+    const newAdvice = {
+      _id: crypto.randomBytes(16).toString('hex'),
+      title: title,
+      content: content,
+      type: type || 'market_prediction',
+      priority: priority || 'medium',
+      isActive: isActive !== undefined ? isActive : true,
+      author: 'admin', // Simple admin user
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      metadata: {
+        viewCount: 0,
+        isSticky: false,
+        tags: []
+      }
+    };
+
+    adviceData.push(newAdvice);
+    await saveAdviceData();
+
+    // Emit real-time update to all connected clients
+    io.emit('adviceUpdate', { action: 'create', advice: newAdvice });
+
+    res.json({
+      advice: newAdvice,
+      message: 'Advice created successfully'
+    });
+  } catch (error) {
+    console.error('Error creating advice:', error);
+    res.status(500).json({ 
+      error: 'Failed to create advice',
+      code: 'CREATION_FAILED'
+    });
+  }
+});
+
+app.delete('/api/advice/:id', verifyAdminAuth, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const initialLength = adviceData.length;
+    adviceData = adviceData.filter(advice => advice._id !== id);
+
+    if (adviceData.length < initialLength) {
+      await saveAdviceData();
+      // Emit real-time update to all connected clients
+      io.emit('adviceUpdate', { action: 'delete', adviceId: id });
+      res.json({ message: 'Advice deleted successfully' });
+    } else {
+      res.status(404).json({ message: 'Advice not found' });
+    }
+  } catch (error) {
+    console.error('Error deleting advice:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Admin advice route
+app.get('/api/admin/advice', verifyAdminAuth, async (req, res) => {
+  try {
+    const { limit = 50, page = 1, type, isActive } = req.query;
+    
+    let filteredAdvice = [...adviceData];
+    
+    // Filter by type if specified
+    if (type) {
+      filteredAdvice = filteredAdvice.filter(advice => advice.type === type);
+    }
+    
+    // Filter by active status if specified
+    if (isActive !== undefined) {
+      const activeBool = isActive === 'true';
+      filteredAdvice = filteredAdvice.filter(advice => advice.isActive === activeBool);
+    }
+    
+    // Sort by creation date (newest first)
+    filteredAdvice.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    
+    // Apply pagination
+    const startIndex = (parseInt(page) - 1) * parseInt(limit);
+    const endIndex = startIndex + parseInt(limit);
+    const paginatedAdvice = filteredAdvice.slice(startIndex, endIndex);
+    
+    res.json({
+      advice: paginatedAdvice,
+      total: filteredAdvice.length,
+      page: parseInt(page),
+      limit: parseInt(limit),
+      totalPages: Math.ceil(filteredAdvice.length / parseInt(limit))
+    });
+  } catch (error) {
+    console.error('Error fetching admin advice:', error);
+    res.status(500).json({ 
+      error: 'Failed to fetch advice',
+      advice: []
+    });
+  }
+});
+
+// Search advice (must come before /:id route)
+app.get('/api/advice/search', async (req, res) => {
+  try {
+    const { q: searchTerm, limit = 10, type } = req.query;
+    
+    if (!searchTerm) {
+      return res.status(400).json({ error: 'Search term is required' });
+    }
+    
+    let filteredAdvice = adviceData.filter(advice => 
+      advice.isActive && (
+        advice.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        advice.content.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+    );
+    
+    if (type) {
+      filteredAdvice = filteredAdvice.filter(advice => advice.type === type);
+    }
+    
+    filteredAdvice = filteredAdvice.slice(0, parseInt(limit));
+    
+    res.json({ advice: filteredAdvice });
+  } catch (error) {
+    console.error('Error searching advice:', error);
+    res.status(500).json({ error: 'Failed to search advice' });
+  }
+});
+
+// Get advice by ID
+app.get('/api/advice/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const advice = adviceData.find(advice => advice._id === id);
+    
+    if (!advice) {
+      return res.status(404).json({ error: 'Advice not found' });
+    }
+    
+    // Increment view count
+    advice.metadata.viewCount += 1;
+    await saveAdviceData();
+    
+    res.json({ advice });
+  } catch (error) {
+    console.error('Error fetching advice by ID:', error);
+    res.status(500).json({ error: 'Failed to fetch advice' });
+  }
+});
+
+// Toggle advice status
+app.patch('/api/advice/:id/toggle-status', verifyAdminAuth, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const advice = adviceData.find(advice => advice._id === id);
+    
+    if (!advice) {
+      return res.status(404).json({ error: 'Advice not found' });
+    }
+    
+    advice.isActive = !advice.isActive;
+    advice.updatedAt = new Date().toISOString();
+    await saveAdviceData();
+    
+    // Emit real-time update
+    io.emit('adviceUpdate', { action: 'status_toggle', advice });
+    
+    res.json({
+      advice,
+      message: 'Advice status updated successfully'
+    });
+  } catch (error) {
+    console.error('Error toggling advice status:', error);
+    res.status(500).json({ error: 'Failed to update advice status' });
+  }
+});
+
+// Advice stats overview
+app.get('/api/advice/stats/overview', async (req, res) => {
+  try {
+    const totalAdvice = adviceData.length;
+    const activeAdvice = adviceData.filter(advice => advice.isActive).length;
+    const inactiveAdvice = totalAdvice - activeAdvice;
+    
+    const typeStats = {};
+    adviceData.forEach(advice => {
+      typeStats[advice.type] = (typeStats[advice.type] || 0) + 1;
+    });
+    
+    const totalViews = adviceData.reduce((sum, advice) => sum + (advice.metadata.viewCount || 0), 0);
+    
+    res.json({
+      total: totalAdvice,
+      active: activeAdvice,
+      inactive: inactiveAdvice,
+      byType: typeStats,
+      totalViews: totalViews
+    });
+  } catch (error) {
+    console.error('Error fetching advice stats:', error);
+    res.status(500).json({ error: 'Failed to fetch advice statistics' });
   }
 });
 
@@ -601,6 +852,7 @@ async function startServer() {
 process.on('SIGTERM', async () => {
   console.log('🛑 Received SIGTERM, shutting down gracefully...');
   await saveSessions();
+  await saveAdviceData(); // Save advice data on shutdown
   server.close(() => {
     console.log('✅ Server closed');
     process.exit(0);
@@ -610,6 +862,7 @@ process.on('SIGTERM', async () => {
 process.on('SIGINT', async () => {
   console.log('🛑 Received SIGINT, shutting down gracefully...');
   await saveSessions();
+  await saveAdviceData(); // Save advice data on shutdown
   server.close(() => {
     console.log('✅ Server closed');
     process.exit(0);
