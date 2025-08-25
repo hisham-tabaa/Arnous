@@ -278,13 +278,14 @@ const UserPage = () => {
             🏢 معلومات الشركة
           </h3>
           {companyInfo ? (
-            <div style={{ 
-              display: 'grid', 
-              gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', 
-              gap: '25px',
-              marginBottom: '20px'
-            }}>
-              {/* Contact Information */}
+            <>
+              <div style={{ 
+                display: 'grid', 
+                gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', 
+                gap: '25px',
+                marginBottom: '20px'
+              }}>
+                {/* Contact Information */}
               <div style={{
                 background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
                 borderRadius: '15px',
@@ -347,7 +348,7 @@ const UserPage = () => {
               </div>
             </div>
 
-            {/* Social Media Links */}
+
             <div style={{ textAlign: 'center' }}>
               <h4 style={{ color: '#2d3748', marginBottom: '15px' }}>🔗 تابعونا على</h4>
               <div style={{ display: 'flex', justifyContent: 'center', gap: '15px', flexWrap: 'wrap' }}>
@@ -385,6 +386,7 @@ const UserPage = () => {
                 ))}
               </div>
             </div>
+            </>
           ) : (
             <div style={{ 
               textAlign: 'center', 
