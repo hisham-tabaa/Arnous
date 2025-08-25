@@ -438,8 +438,8 @@ app.post('/api/advice', verifyAdminAuth, async (req, res) => {
       updatedAt: new Date().toISOString(),
       metadata: {
         viewCount: 0,
-        isSticky: false,
-        tags: []
+        isSticky: req.body.metadata?.isSticky || false,
+        tags: req.body.metadata?.tags || []
       }
     };
 
