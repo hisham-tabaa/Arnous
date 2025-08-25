@@ -7,11 +7,12 @@ const axios = require('axios');
 require('dotenv').config();
 
 // Import Database Configuration
-const { connectDB, Currency, User, ActivityLog } = require('./config/database');
+const { connectDB, Currency, User, ActivityLog, Advice } = require('./config/database');
 
 // Import Services
 const AuthService = require('./services/authService');
 const CurrencyService = require('./services/currencyService');
+const AdviceService = require('./services/adviceService');
 
 // Import Middleware
 const { 
@@ -653,6 +654,236 @@ app.get('/api/activity/stats',
       console.error('Error fetching activity stats:', error);
       res.status(500).json({ 
         error: 'Failed to fetch activity statistics',
+        code: 'FETCH_FAILED'
+      });
+    }
+  }
+);
+
+// Company information route
+app.get('/api/company/info', async (req, res) => {
+  try {
+    const companyInfo = AdviceService.getCompanyInfo();
+    res.json({ companyInfo });
+  } catch (error) {
+    console.error('Error fetching company info:', error);
+    res.status(500).json({ 
+      error: 'Failed to fetch company information',
+      code: 'FETCH_FAILED'
+    });
+  }
+});
+
+// Advice routes
+app.get('/api/advice', async (req, res) => {
+  try {
+    const { limit, type, featured } = req.query;
+    const options = {
+      limit: parseInt(limit) || 10,
+      type: type || null,
+      featured: featured === 'true'
+    };
+    
+    const advice = await AdviceService.getPublicAdvice(options);
+    res.json({ advice });
+  } catch (error) {
+    console.error('Error fetching advice:', error);
+    res.status(500).json({ 
+      error: 'Failed to fetch advice',
+      code: 'FETCH_FAILED'
+    });
+  }
+});
+
+app.get('/api/advice/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const advice = await AdviceService.getAdviceById(id);
+    
+    // Increment view count
+    await AdviceService.incrementViewCount(id);
+    
+    res.json({ advice });
+  } catch (error) {
+    console.error('Error fetching advice:', error);
+    res.status(404).json({ 
+      error: 'Advice not found',
+      code: 'NOT_FOUND'
+    });
+  }
+});
+
+app.post('/api/advice', 
+  verifyToken, 
+  requirePermission('write_currencies'),
+  logActivity('advice_create', 'advice'),
+  async (req, res) => {
+    try {
+      const adviceData = req.body;
+      
+      if (!adviceData.title || !adviceData.content) {
+        return res.status(400).json({ 
+          error: 'Title and content are required',
+          code: 'MISSING_DATA'
+        });
+      }
+
+      const advice = await AdviceService.createAdvice(adviceData, req.user.id);
+      
+      // Emit real-time update to all connected clients
+      io.emit('adviceUpdate', { action: 'create', advice });
+      
+      res.json({ 
+        success: true, 
+        advice,
+        message: 'Advice created successfully'
+      });
+    } catch (error) {
+      console.error('Error creating advice:', error);
+      res.status(400).json({ 
+        error: error.message,
+        code: 'CREATION_FAILED'
+      });
+    }
+  }
+);
+
+app.put('/api/advice/:id', 
+  verifyToken, 
+  requirePermission('write_currencies'),
+  logActivity('advice_update', 'advice'),
+  async (req, res) => {
+    try {
+      const { id } = req.params;
+      const updateData = req.body;
+      
+      const advice = await AdviceService.updateAdvice(id, updateData, req.user.id);
+      
+      // Emit real-time update
+      io.emit('adviceUpdate', { action: 'update', advice });
+      
+      res.json({ 
+        success: true, 
+        advice,
+        message: 'Advice updated successfully'
+      });
+    } catch (error) {
+      console.error('Error updating advice:', error);
+      res.status(400).json({ 
+        error: error.message,
+        code: 'UPDATE_FAILED'
+      });
+    }
+  }
+);
+
+app.delete('/api/advice/:id', 
+  verifyToken, 
+  requirePermission('write_currencies'),
+  logActivity('advice_delete', 'advice'),
+  async (req, res) => {
+    try {
+      const { id } = req.params;
+      const result = await AdviceService.deleteAdvice(id, req.user.id);
+      
+      // Emit real-time update
+      io.emit('adviceUpdate', { action: 'delete', adviceId: id });
+      
+      res.json(result);
+    } catch (error) {
+      console.error('Error deleting advice:', error);
+      res.status(400).json({ 
+        error: error.message,
+        code: 'DELETION_FAILED'
+      });
+    }
+  }
+);
+
+app.patch('/api/advice/:id/toggle-status', 
+  verifyToken, 
+  requirePermission('write_currencies'),
+  logActivity('advice_status_toggle', 'advice'),
+  async (req, res) => {
+    try {
+      const { id } = req.params;
+      const advice = await AdviceService.toggleAdviceStatus(id, req.user.id);
+      
+      // Emit real-time update
+      io.emit('adviceUpdate', { action: 'status_toggle', advice });
+      
+      res.json({ 
+        success: true, 
+        advice,
+        message: 'Advice status updated successfully'
+      });
+    } catch (error) {
+      console.error('Error toggling advice status:', error);
+      res.status(400).json({ 
+        error: error.message,
+        code: 'STATUS_TOGGLE_FAILED'
+      });
+    }
+  }
+);
+
+app.get('/api/admin/advice', 
+  verifyToken, 
+  requirePermission('view_analytics'),
+  async (req, res) => {
+    try {
+      const { page, limit, type, isActive, sortBy, sortOrder } = req.query;
+      const options = {
+        page: parseInt(page) || 1,
+        limit: parseInt(limit) || 20,
+        type: type || null,
+        isActive: isActive !== undefined ? isActive === 'true' : null,
+        sortBy: sortBy || 'createdAt',
+        sortOrder: sortOrder === 'asc' ? 1 : -1
+      };
+      
+      const result = await AdviceService.getAllAdvice(options);
+      res.json(result);
+    } catch (error) {
+      console.error('Error fetching admin advice:', error);
+      res.status(500).json({ 
+        error: 'Failed to fetch advice data',
+        code: 'FETCH_FAILED'
+      });
+    }
+  }
+);
+
+app.get('/api/advice/search', async (req, res) => {
+  try {
+    const { q: searchTerm, limit, type } = req.query;
+    const options = {
+      limit: parseInt(limit) || 10,
+      type: type || null
+    };
+    
+    const advice = await AdviceService.searchAdvice(searchTerm, options);
+    res.json({ advice });
+  } catch (error) {
+    console.error('Error searching advice:', error);
+    res.status(500).json({ 
+      error: 'Failed to search advice',
+      code: 'SEARCH_FAILED'
+    });
+  }
+});
+
+app.get('/api/advice/stats/overview', 
+  verifyToken, 
+  requirePermission('view_analytics'),
+  async (req, res) => {
+    try {
+      const stats = await AdviceService.getAdviceStats();
+      res.json({ stats });
+    } catch (error) {
+      console.error('Error fetching advice stats:', error);
+      res.status(500).json({ 
+        error: 'Failed to fetch advice statistics',
         code: 'FETCH_FAILED'
       });
     }

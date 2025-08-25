@@ -18,6 +18,9 @@ const UserPage = () => {
   const [loading, setLoading] = useState(true);
   const [lastUpdate, setLastUpdate] = useState(null);
   const [connected, setConnected] = useState(false);
+  const [companyInfo, setCompanyInfo] = useState(null);
+  const [advice, setAdvice] = useState([]);
+  const [loadingAdvice, setLoadingAdvice] = useState(true);
 
   const currencyInfo = {
     USD: { 
@@ -50,6 +53,17 @@ const UserPage = () => {
     }
   };
 
+  const fetchAdvice = async () => {
+    try {
+      const response = await axios.get('/api/advice?limit=5&featured=true');
+      setAdvice(response.data.advice);
+    } catch (error) {
+      console.error('Error fetching advice:', error);
+    } finally {
+      setLoadingAdvice(false);
+    }
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -63,7 +77,18 @@ const UserPage = () => {
       }
     };
 
+    const fetchCompanyInfo = async () => {
+      try {
+        const response = await axios.get('/api/company/info');
+        setCompanyInfo(response.data.companyInfo);
+      } catch (error) {
+        console.error('Error fetching company info:', error);
+      }
+    };
+
     fetchData();
+    fetchCompanyInfo();
+    fetchAdvice();
     
     // Initialize socket connection
     const newSocket = io(window.location.origin);
@@ -80,6 +105,11 @@ const UserPage = () => {
       console.log('Received real-time currency update:', updatedCurrencies);
       setCurrencies(updatedCurrencies);
       setLastUpdate(new Date().toISOString());
+    });
+    
+    newSocket.on('adviceUpdate', (data) => {
+      console.log('Received advice update:', data);
+      fetchAdvice(); // Refresh advice list
     });
     
     // Auto-refresh every 30 seconds
@@ -198,6 +228,250 @@ const UserPage = () => {
           })}
         </div>
 
+        {/* Company Information Section */}
+        {companyInfo && (
+          <div className="card" style={{ marginTop: '30px' }}>
+            <h3 style={{ color: '#2d3748', marginBottom: '20px', textAlign: 'center' }}>
+              🏢 معلومات الشركة
+            </h3>
+            <div style={{ 
+              display: 'grid', 
+              gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', 
+              gap: '25px',
+              marginBottom: '20px'
+            }}>
+              {/* Contact Information */}
+              <div style={{
+                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                borderRadius: '15px',
+                padding: '25px',
+                color: 'white'
+              }}>
+                <h4 style={{ margin: '0 0 15px 0', fontSize: '1.2rem' }}>📞 معلومات التواصل</h4>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <span style={{ fontWeight: 'bold', minWidth: '80px' }}>📍 العنوان:</span>
+                    <span>{companyInfo.address}</span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <span style={{ fontWeight: 'bold', minWidth: '80px' }}>📱 الجوال:</span>
+                    <a href={`tel:${companyInfo.mobile}`} style={{ color: 'white', textDecoration: 'none' }}>
+                      {companyInfo.mobile}
+                    </a>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <span style={{ fontWeight: 'bold', minWidth: '80px' }}>☎️ الهاتف:</span>
+                    <a href={`tel:${companyInfo.phone}`} style={{ color: 'white', textDecoration: 'none' }}>
+                      {companyInfo.phone}
+                    </a>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <span style={{ fontWeight: 'bold', minWidth: '80px' }}>📧 البريد:</span>
+                    <a href={`mailto:${companyInfo.email}`} style={{ color: 'white', textDecoration: 'none' }}>
+                      {companyInfo.email}
+                    </a>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <span style={{ fontWeight: 'bold', minWidth: '80px' }}>🌐 الموقع:</span>
+                    <a href={companyInfo.website} target="_blank" rel="noopener noreferrer" style={{ color: 'white', textDecoration: 'none' }}>
+                      {companyInfo.website}
+                    </a>
+                  </div>
+                </div>
+              </div>
+
+              {/* Working Hours & Services */}
+              <div style={{
+                background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+                borderRadius: '15px',
+                padding: '25px',
+                color: 'white'
+              }}>
+                <h4 style={{ margin: '0 0 15px 0', fontSize: '1.2rem' }}>🕒 ساعات العمل والخدمات</h4>
+                <div style={{ marginBottom: '15px' }}>
+                  <p style={{ margin: '0 0 10px 0', fontWeight: 'bold' }}>⏰ ساعات العمل:</p>
+                  <p style={{ margin: 0 }}>{companyInfo.workingHours.ar}</p>
+                </div>
+                <div>
+                  <p style={{ margin: '0 0 10px 0', fontWeight: 'bold' }}>🛎️ خدماتنا:</p>
+                  <ul style={{ margin: 0, paddingRight: '20px' }}>
+                    {companyInfo.services.ar.map((service, index) => (
+                      <li key={index} style={{ marginBottom: '5px' }}>{service}</li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            {/* Social Media Links */}
+            <div style={{ textAlign: 'center' }}>
+              <h4 style={{ color: '#2d3748', marginBottom: '15px' }}>🔗 تابعونا على</h4>
+              <div style={{ display: 'flex', justifyContent: 'center', gap: '15px', flexWrap: 'wrap' }}>
+                {Object.entries(companyInfo.socialMedia).map(([platform, info]) => (
+                  <a
+                    key={platform}
+                    href={info.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      padding: '12px 20px',
+                      borderRadius: '25px',
+                      textDecoration: 'none',
+                      color: 'white',
+                      fontWeight: 'bold',
+                      background: platform === 'facebook' ? '#1877f2' :
+                                 platform === 'instagram' ? 'linear-gradient(45deg, #f09433 0%,#e6683c 25%,#dc2743 50%,#cc2366 75%,#bc1888 100%)' :
+                                 platform === 'telegram' ? '#0088cc' :
+                                 platform === 'whatsapp' ? '#25D366' : '#333',
+                      transition: 'transform 0.3s ease',
+                      cursor: 'pointer'
+                    }}
+                    onMouseEnter={(e) => e.target.style.transform = 'scale(1.05)'}
+                    onMouseLeave={(e) => e.target.style.transform = 'scale(1)'}
+                  >
+                    {platform === 'facebook' && '📘'}
+                    {platform === 'instagram' && '📷'}
+                    {platform === 'telegram' && '📨'}
+                    {platform === 'whatsapp' && '💬'}
+                    {info.name}
+                  </a>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Advice and Predictions Section */}
+        <div className="card" style={{ marginTop: '30px' }}>
+          <h3 style={{ color: '#2d3748', marginBottom: '20px', textAlign: 'center' }}>
+            🔮 توقعات وتحليلات أرنوس
+          </h3>
+          <p style={{ 
+            color: '#718096', 
+            textAlign: 'center', 
+            marginBottom: '25px',
+            fontSize: '1.1rem',
+            lineHeight: '1.6'
+          }}>
+            آراء وتوقعات خبراء أرنوس حول أسواق العملات والاقتصاد المحلي والعالمي
+          </p>
+          
+          {loadingAdvice ? (
+            <div style={{ textAlign: 'center', padding: '40px' }}>
+              <RefreshCw className="animate-spin" size={32} style={{ color: '#3b82f6' }} />
+              <p style={{ marginTop: '15px', color: '#718096', fontSize: '1.1rem' }}>جاري تحميل التوقعات...</p>
+            </div>
+          ) : advice.length === 0 ? (
+            <div style={{ 
+              textAlign: 'center', 
+              padding: '40px',
+              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              borderRadius: '15px',
+              color: 'white'
+            }}>
+              <p style={{ fontSize: '1.2rem', margin: 0 }}>🔍 لا توجد توقعات متاحة حالياً</p>
+              <p style={{ fontSize: '1rem', margin: '10px 0 0 0', opacity: 0.9 }}>ترقبوا التحديثات قريباً</p>
+            </div>
+          ) : (
+            <div style={{ display: 'grid', gap: '20px' }}>
+              {advice.map(item => (
+                <div
+                  key={item._id}
+                  style={{
+                    background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+                    borderRadius: '15px',
+                    padding: '25px',
+                    color: 'white',
+                    position: 'relative',
+                    overflow: 'hidden'
+                  }}
+                >
+                  <div style={{ position: 'relative', zIndex: 1 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '15px' }}>
+                      <h4 style={{ 
+                        margin: 0, 
+                        fontSize: '1.3rem', 
+                        fontWeight: 'bold'
+                      }}>
+                        {item.title}
+                      </h4>
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        <span style={{
+                          background: 'rgba(255, 255, 255, 0.2)',
+                          padding: '4px 12px',
+                          borderRadius: '20px',
+                          fontSize: '0.85rem',
+                          fontWeight: 'bold'
+                        }}>
+                          {item.type === 'market_prediction' ? '🔮 توقع السوق' :
+                           item.type === 'financial_advice' ? '💰 نصيحة مالية' :
+                           item.type === 'currency_outlook' ? '📊 نظرة عملات' : '📋 عام'}
+                        </span>
+                        <span style={{
+                          background: item.priority === 'urgent' ? 'rgba(239, 68, 68, 0.8)' :
+                                     item.priority === 'high' ? 'rgba(249, 115, 22, 0.8)' :
+                                     item.priority === 'medium' ? 'rgba(234, 179, 8, 0.8)' : 'rgba(34, 197, 94, 0.8)',
+                          padding: '4px 12px',
+                          borderRadius: '20px',
+                          fontSize: '0.85rem',
+                          fontWeight: 'bold'
+                        }}>
+                          {item.priority === 'urgent' ? '🔴 عاجل' :
+                           item.priority === 'high' ? '🟠 مهم' :
+                           item.priority === 'medium' ? '🟡 متوسط' : '🟢 عادي'}
+                        </span>
+                      </div>
+                    </div>
+                    
+                    <p style={{ 
+                      fontSize: '1.1rem', 
+                      lineHeight: '1.6', 
+                      margin: '0 0 15px 0',
+                      whiteSpace: 'pre-wrap'
+                    }}>
+                      {item.content}
+                    </p>
+                    
+                    <div style={{ 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      gap: '15px',
+                      fontSize: '0.95rem',
+                      opacity: 0.9
+                    }}>
+                      <span>📅 {new Date(item.publishDate || item.createdAt).toLocaleDateString('ar-SA', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                      })}</span>
+                      <span>👤 {item.author?.username || 'فريق أرنوس'}</span>
+                      {item.metadata?.viewCount > 0 && (
+                        <span>👁️ {item.metadata.viewCount} مشاهدة</span>
+                      )}
+                    </div>
+                  </div>
+                  
+                  {/* Background pattern */}
+                  <div style={{
+                    position: 'absolute',
+                    top: '-50%',
+                    right: '-50%',
+                    width: '200%',
+                    height: '200%',
+                    background: 'url("data:image/svg+xml,%3Csvg width="40" height="40" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="white" fill-opacity="0.05"%3E%3Cpath d="M20 20c0 11.046-8.954 20-20 20v-20h20z"/%3E%3C/g%3E%3C/svg%3E")',
+                    transform: 'rotate(45deg)',
+                    zIndex: 0
+                  }} />
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Additional Information */}
         <div className="card" style={{ marginTop: '30px', textAlign: 'center' }}>
           <h3 style={{ color: '#2d3748', marginBottom: '15px' }}>معلومات إضافية</h3>
           <p style={{ color: '#718096', lineHeight: '1.6' }}>

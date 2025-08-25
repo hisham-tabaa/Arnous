@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const Currency = require('../models/Currency');
 const User = require('../models/User');
 const ActivityLog = require('../models/ActivityLog');
+const Advice = require('../models/Advice');
 
 // MongoDB connection options
 const mongoOptions = {
@@ -136,5 +137,6 @@ module.exports = {
   Currency,
   User,
   ActivityLog,
+  Advice,
   mongoose
 };

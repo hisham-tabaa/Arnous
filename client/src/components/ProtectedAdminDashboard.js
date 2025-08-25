@@ -38,6 +38,16 @@ const ProtectedAdminDashboard = ({ onLogout }) => {
   const [notification, setNotification] = useState(null);
   const [connected, setConnected] = useState(false);
   const [socialModal, setSocialModal] = useState(null);
+  const [adviceForm, setAdviceForm] = useState({
+    title: '',
+    content: '',
+    type: 'market_prediction',
+    priority: 'medium',
+    isActive: true
+  });
+  const [adviceList, setAdviceList] = useState([]);
+  const [loadingAdvice, setLoadingAdvice] = useState(false);
+  const [showAdviceForm, setShowAdviceForm] = useState(false);
   const navigate = useNavigate();
 
   const currencyInfo = {
@@ -140,6 +150,7 @@ const ProtectedAdminDashboard = ({ onLogout }) => {
     const initializeData = async () => {
       await fetchData();
       await generateMsg();
+      await fetchAdvice();
     };
     
     initializeData();
@@ -165,10 +176,101 @@ const ProtectedAdminDashboard = ({ onLogout }) => {
       showNotification(`Successfully published to ${data.platform}!`);
     });
     
+    newSocket.on('adviceUpdate', (data) => {
+      console.log('Received advice update:', data);
+      fetchAdvice(); // Refresh advice list
+    });
+    
     return () => {
       newSocket.close();
     };
   }, [navigate, handleLogout]);
+
+  // Advice management functions
+  const fetchAdvice = async () => {
+    setLoadingAdvice(true);
+    try {
+      const token = localStorage.getItem('adminToken');
+      const response = await axios.get('/api/admin/advice?limit=10', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setAdviceList(response.data.advice);
+    } catch (error) {
+      console.error('Error fetching advice:', error);
+      showNotification('Error fetching advice', 'error');
+    }
+    setLoadingAdvice(false);
+  };
+
+  const handleAdviceSubmit = async (e) => {
+    e.preventDefault();
+    if (!adviceForm.title.trim() || !adviceForm.content.trim()) {
+      showNotification('Title and content are required', 'error');
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('adminToken');
+      await axios.post('/api/advice', adviceForm, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      showNotification('Advice created successfully!');
+      setAdviceForm({
+        title: '',
+        content: '',
+        type: 'market_prediction',
+        priority: 'medium',
+        isActive: true
+      });
+      setShowAdviceForm(false);
+      await fetchAdvice();
+    } catch (error) {
+      console.error('Error creating advice:', error);
+      showNotification('Error creating advice', 'error');
+    }
+  };
+
+  const handleAdviceFormChange = (field, value) => {
+    setAdviceForm(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const toggleAdviceStatus = async (adviceId) => {
+    try {
+      const token = localStorage.getItem('adminToken');
+      await axios.patch(`/api/advice/${adviceId}/toggle-status`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      showNotification('Advice status updated successfully!');
+      await fetchAdvice();
+    } catch (error) {
+      console.error('Error toggling advice status:', error);
+      showNotification('Error updating advice status', 'error');
+    }
+  };
+
+  const deleteAdvice = async (adviceId) => {
+    if (!window.confirm('Are you sure you want to delete this advice?')) {
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('adminToken');
+      await axios.delete(`/api/advice/${adviceId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      showNotification('Advice deleted successfully!');
+      await fetchAdvice();
+    } catch (error) {
+      console.error('Error deleting advice:', error);
+      showNotification('Error deleting advice', 'error');
+    }
+  };
 
   const handleCurrencyChange = (currency, field, value) => {
     setCurrencies(prev => ({
@@ -555,6 +657,267 @@ const ProtectedAdminDashboard = ({ onLogout }) => {
                 </button>
               );
             })}
+          </div>
+        </div>
+
+        {/* Advice Management Section */}
+        <div className="card" style={{ marginTop: '30px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+            <h3 style={{ color: '#2d3748', margin: 0 }}>📝 Market Predictions & Advice</h3>
+            <button
+              onClick={() => setShowAdviceForm(!showAdviceForm)}
+              className="btn btn-primary"
+              style={{ minWidth: 'auto' }}
+            >
+              {showAdviceForm ? '❌ Cancel' : '➕ Add New Advice'}
+            </button>
+          </div>
+
+          {/* Advice Form */}
+          {showAdviceForm && (
+            <form onSubmit={handleAdviceSubmit} style={{ 
+              background: '#f8f9fa', 
+              padding: '20px', 
+              borderRadius: '8px', 
+              marginBottom: '20px',
+              border: '2px solid #e2e8f0'
+            }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '15px', marginBottom: '15px' }}>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', color: '#2d3748' }}>
+                    Title:
+                  </label>
+                  <input
+                    type="text"
+                    value={adviceForm.title}
+                    onChange={(e) => handleAdviceFormChange('title', e.target.value)}
+                    placeholder="Enter advice title..."
+                    style={{
+                      width: '100%',
+                      padding: '10px',
+                      borderRadius: '8px',
+                      border: '2px solid #e2e8f0',
+                      fontSize: '1rem'
+                    }}
+                    required
+                  />
+                </div>
+                
+                <div>
+                  <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', color: '#2d3748' }}>
+                    Type:
+                  </label>
+                  <select
+                    value={adviceForm.type}
+                    onChange={(e) => handleAdviceFormChange('type', e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '10px',
+                      borderRadius: '8px',
+                      border: '2px solid #e2e8f0',
+                      fontSize: '1rem',
+                      background: 'white'
+                    }}
+                  >
+                    <option value="market_prediction">🔮 Market Prediction</option>
+                    <option value="financial_advice">💰 Financial Advice</option>
+                    <option value="currency_outlook">📊 Currency Outlook</option>
+                    <option value="general">📋 General</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', color: '#2d3748' }}>
+                    Priority:
+                  </label>
+                  <select
+                    value={adviceForm.priority}
+                    onChange={(e) => handleAdviceFormChange('priority', e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '10px',
+                      borderRadius: '8px',
+                      border: '2px solid #e2e8f0',
+                      fontSize: '1rem',
+                      background: 'white'
+                    }}
+                  >
+                    <option value="low">🟢 Low</option>
+                    <option value="medium">🟡 Medium</option>
+                    <option value="high">🟠 High</option>
+                    <option value="urgent">🔴 Urgent</option>
+                  </select>
+                </div>
+              </div>
+
+              <div style={{ marginBottom: '15px' }}>
+                <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', color: '#2d3748' }}>
+                  Content:
+                </label>
+                <textarea
+                  value={adviceForm.content}
+                  onChange={(e) => handleAdviceFormChange('content', e.target.value)}
+                  placeholder="Enter your market prediction or advice here..."
+                  rows={4}
+                  style={{
+                    width: '100%',
+                    padding: '10px',
+                    borderRadius: '8px',
+                    border: '2px solid #e2e8f0',
+                    fontSize: '1rem',
+                    resize: 'vertical',
+                    fontFamily: 'inherit'
+                  }}
+                  required
+                />
+              </div>
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '15px' }}>
+                <input
+                  type="checkbox"
+                  id="isActive"
+                  checked={adviceForm.isActive}
+                  onChange={(e) => handleAdviceFormChange('isActive', e.target.checked)}
+                  style={{ width: '18px', height: '18px' }}
+                />
+                <label htmlFor="isActive" style={{ fontWeight: 'bold', color: '#2d3748' }}>
+                  ✅ Publish immediately
+                </label>
+              </div>
+
+              <button
+                type="submit"
+                className="btn btn-success"
+                style={{ width: '100%' }}
+              >
+                💾 Save Advice
+              </button>
+            </form>
+          )}
+
+          {/* Advice List */}
+          <div>
+            <h4 style={{ color: '#2d3748', marginBottom: '15px' }}>Recent Advice</h4>
+            {loadingAdvice ? (
+              <div style={{ textAlign: 'center', padding: '20px' }}>
+                <RefreshCw className="animate-spin" size={24} />
+                <p style={{ marginTop: '10px', color: '#718096' }}>Loading advice...</p>
+              </div>
+            ) : adviceList.length === 0 ? (
+              <div style={{ 
+                textAlign: 'center', 
+                padding: '40px', 
+                color: '#718096',
+                background: '#f8f9fa',
+                borderRadius: '8px',
+                border: '2px dashed #e2e8f0'
+              }}>
+                <p>📝 No advice found. Create your first prediction above!</p>
+              </div>
+            ) : (
+              <div style={{ display: 'grid', gap: '15px' }}>
+                {adviceList.map(advice => (
+                  <div
+                    key={advice._id}
+                    style={{
+                      background: advice.isActive ? '#ffffff' : '#f8f9fa',
+                      border: `2px solid ${advice.isActive ? '#e2e8f0' : '#cbd5e0'}`,
+                      borderRadius: '12px',
+                      padding: '20px',
+                      opacity: advice.isActive ? 1 : 0.7
+                    }}
+                  >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '10px' }}>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
+                          <h5 style={{ margin: 0, color: '#2d3748', fontSize: '1.1rem' }}>
+                            {advice.title}
+                          </h5>
+                          <span style={{
+                            background: advice.type === 'market_prediction' ? '#3b82f6' :
+                                       advice.type === 'financial_advice' ? '#10b981' :
+                                       advice.type === 'currency_outlook' ? '#f59e0b' : '#6b7280',
+                            color: 'white',
+                            padding: '4px 8px',
+                            borderRadius: '12px',
+                            fontSize: '0.8rem',
+                            fontWeight: 'bold'
+                          }}>
+                            {advice.type === 'market_prediction' ? '🔮' :
+                             advice.type === 'financial_advice' ? '💰' :
+                             advice.type === 'currency_outlook' ? '📊' : '📋'} {advice.type.replace('_', ' ')}
+                          </span>
+                          <span style={{
+                            background: advice.priority === 'urgent' ? '#ef4444' :
+                                       advice.priority === 'high' ? '#f97316' :
+                                       advice.priority === 'medium' ? '#eab308' : '#22c55e',
+                            color: 'white',
+                            padding: '4px 8px',
+                            borderRadius: '12px',
+                            fontSize: '0.8rem',
+                            fontWeight: 'bold'
+                          }}>
+                            {advice.priority === 'urgent' ? '🔴' :
+                             advice.priority === 'high' ? '🟠' :
+                             advice.priority === 'medium' ? '🟡' : '🟢'} {advice.priority}
+                          </span>
+                        </div>
+                        <p style={{ 
+                          color: '#4a5568', 
+                          lineHeight: '1.5', 
+                          margin: '0 0 10px 0',
+                          whiteSpace: 'pre-wrap'
+                        }}>
+                          {advice.content}
+                        </p>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '15px', fontSize: '0.9rem', color: '#718096' }}>
+                          <span>📅 {new Date(advice.createdAt).toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'short',
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })}</span>
+                          <span>👤 {advice.author?.username || 'Unknown'}</span>
+                          {advice.metadata?.viewCount > 0 && (
+                            <span>👁️ {advice.metadata.viewCount} views</span>
+                          )}
+                        </div>
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginLeft: '15px' }}>
+                        <button
+                          onClick={() => toggleAdviceStatus(advice._id)}
+                          className={`btn ${advice.isActive ? 'btn-warning' : 'btn-success'}`}
+                          style={{ 
+                            minWidth: 'auto',
+                            padding: '6px 12px',
+                            fontSize: '0.85rem'
+                          }}
+                          title={advice.isActive ? 'Deactivate advice' : 'Activate advice'}
+                        >
+                          {advice.isActive ? '⏸️ Hide' : '▶️ Show'}
+                        </button>
+                        <button
+                          onClick={() => deleteAdvice(advice._id)}
+                          className="btn"
+                          style={{ 
+                            minWidth: 'auto',
+                            padding: '6px 12px',
+                            fontSize: '0.85rem',
+                            background: '#ef4444',
+                            color: 'white',
+                            border: 'none'
+                          }}
+                          title="Delete advice"
+                        >
+                          🗑️ Delete
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </div>
