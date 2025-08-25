@@ -381,34 +381,7 @@ app.post('/api/currencies', verifyAdminAuth, async (req, res) => {
 // Advice Routes
 app.get('/api/advice', async (req, res) => {
   try {
-    const { limit, featured, type } = req.query;
-    
-    let filteredAdvice = [...adviceData];
-    
-    // Filter by type if specified
-    if (type) {
-      filteredAdvice = filteredAdvice.filter(advice => advice.type === type);
-    }
-    
-    // Filter by featured/sticky if specified
-    if (featured === 'true') {
-      filteredAdvice = filteredAdvice.filter(advice => 
-        advice.isActive && advice.metadata.isSticky
-      );
-    } else {
-      // Only show active advice for public endpoint
-      filteredAdvice = filteredAdvice.filter(advice => advice.isActive);
-    }
-    
-    // Sort by creation date (newest first)
-    filteredAdvice.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-    
-    // Apply limit if specified
-    if (limit) {
-      filteredAdvice = filteredAdvice.slice(0, parseInt(limit));
-    }
-    
-    res.json({ advice: filteredAdvice });
+    res.json(adviceData);
   } catch (error) {
     console.error('Error fetching advice:', error);
     res.status(500).json({ message: 'Server error' });
@@ -438,8 +411,8 @@ app.post('/api/advice', verifyAdminAuth, async (req, res) => {
       updatedAt: new Date().toISOString(),
       metadata: {
         viewCount: 0,
-        isSticky: req.body.metadata?.isSticky || false,
-        tags: req.body.metadata?.tags || []
+        isSticky: false,
+        tags: []
       }
     };
 

@@ -92,7 +92,7 @@ const UserPage = () => {
 
       const fetchAdvice = async () => {
       try {
-        const response = await axios.get('/api/advice?limit=5&featured=true');
+        const response = await axios.get('/api/advice?limit=5');
         setAdvice(response.data.advice || []);
       } catch (error) {
         console.error('Error fetching advice:', error);
