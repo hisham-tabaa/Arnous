@@ -18,7 +18,44 @@ const UserPage = () => {
   const [loading, setLoading] = useState(true);
   const [lastUpdate, setLastUpdate] = useState(null);
   const [connected, setConnected] = useState(false);
-  const [companyInfo, setCompanyInfo] = useState(null);
+  const [companyInfo, setCompanyInfo] = useState({
+    companyName: 'شركة أرنوس للصرافة',
+    companyNameEn: 'Arnous Exchange Company',
+    address: 'دمشق - شارع الثورة - مقابل وزارة التجارة الداخلية',
+    phone: '+963 11 2233445',
+    mobile: '+963 988 123 456',
+    email: 'info@arnous-exchange.com',
+    website: 'https://arnous-production.up.railway.app',
+    workingHours: {
+      ar: 'من السبت إلى الخميس: 9:00 ص - 6:00 م'
+    },
+    services: {
+      ar: [
+        'صرافة العملات الأجنبية',
+        'تحويلات مالية داخلية وخارجية',
+        'خدمات الدفع الإلكتروني',
+        'استشارات مالية'
+      ]
+    },
+    socialMedia: {
+      facebook: {
+        name: 'Facebook',
+        url: 'https://facebook.com/arnous.exchange'
+      },
+      instagram: {
+        name: 'Instagram',
+        url: 'https://instagram.com/arnous.exchange'
+      },
+      telegram: {
+        name: 'Telegram',
+        url: 'https://t.me/arnous_exchange'
+      },
+      whatsapp: {
+        name: 'WhatsApp',
+        url: 'https://wa.me/963988123456'
+      }
+    }
+  });
   const [advice, setAdvice] = useState([]);
   const [loadingAdvice, setLoadingAdvice] = useState(true);
 
@@ -81,11 +118,15 @@ const UserPage = () => {
     const fetchCompanyInfo = async () => {
       try {
         const response = await axios.get('/api/company/info');
-        setCompanyInfo(response.data.companyInfo);
+        console.log('Company info response:', response.data);
+        // Update with server data if available
+        if (response.data.companyInfo) {
+          setCompanyInfo(response.data.companyInfo);
+        }
       } catch (error) {
         console.error('Error fetching company info:', error);
-        // Set null to hide the section on error
-        setCompanyInfo(null);
+        // Keep default company info if API fails - no need to update since we have defaults
+        console.log('Using default company information');
       }
     };
 
@@ -232,11 +273,11 @@ const UserPage = () => {
         </div>
 
         {/* Company Information Section */}
-        {companyInfo && (
-          <div className="card" style={{ marginTop: '30px' }}>
-            <h3 style={{ color: '#2d3748', marginBottom: '20px', textAlign: 'center' }}>
-              🏢 معلومات الشركة
-            </h3>
+        <div className="card" style={{ marginTop: '30px' }}>
+          <h3 style={{ color: '#2d3748', marginBottom: '20px', textAlign: 'center' }}>
+            🏢 معلومات الشركة
+          </h3>
+          {companyInfo ? (
             <div style={{ 
               display: 'grid', 
               gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', 
@@ -344,8 +385,18 @@ const UserPage = () => {
                 ))}
               </div>
             </div>
-          </div>
-        )}
+          ) : (
+            <div style={{ 
+              textAlign: 'center', 
+              padding: '40px',
+              background: '#f8f9fa',
+              borderRadius: '15px',
+              border: '2px dashed #e2e8f0'
+            }}>
+              <p style={{ color: '#718096', fontSize: '1.1rem' }}>🔄 جاري تحميل معلومات الشركة...</p>
+            </div>
+          )}
+        </div>
 
         {/* Advice and Predictions Section */}
         <div className="card" style={{ marginTop: '30px' }}>

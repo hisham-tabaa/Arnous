@@ -326,7 +326,7 @@ class AdviceService {
   }
 
   /**
-   * Get company information (static data)
+   * Get company information (static data - can be made dynamic later)
    */
   static getCompanyInfo() {
     return {
@@ -338,10 +338,6 @@ class AdviceService {
       mobile: '+963 988 123 456',
       email: 'info@arnous-exchange.com',
       website: 'https://arnous-production.up.railway.app',
-      facebook: 'https://facebook.com/arnous.exchange',
-      instagram: 'https://instagram.com/arnous.exchange',
-      telegram: 'https://t.me/arnous_exchange',
-      whatsapp: 'https://wa.me/963988123456',
       workingHours: {
         ar: 'من السبت إلى الخميس: 9:00 ص - 6:00 م',
         en: 'Saturday to Thursday: 9:00 AM - 6:00 PM'
