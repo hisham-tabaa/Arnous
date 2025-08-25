@@ -103,9 +103,16 @@ const initializeDatabase = async () => {
       console.log(`Default admin user created: ${adminUser.username}`);
     }
     
+    // Initialize advice collection (if needed)
+    const adviceCount = await Advice.countDocuments();
+    if (adviceCount === 0) {
+      console.log('Advice collection is empty - ready for admin input');
+    }
+    
     console.log('Database initialization completed');
   } catch (error) {
     console.error('Database initialization error:', error);
+    // Don't exit on initialization errors to allow graceful degradation
   }
 };
 

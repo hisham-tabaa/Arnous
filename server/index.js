@@ -685,13 +685,11 @@ app.get('/api/advice', async (req, res) => {
     };
     
     const advice = await AdviceService.getPublicAdvice(options);
-    res.json({ advice });
+    res.json({ advice: advice || [] });
   } catch (error) {
     console.error('Error fetching advice:', error);
-    res.status(500).json({ 
-      error: 'Failed to fetch advice',
-      code: 'FETCH_FAILED'
-    });
+    // Return empty array instead of error to prevent frontend crashes
+    res.json({ advice: [] });
   }
 });
 
@@ -846,9 +844,10 @@ app.get('/api/admin/advice',
       res.json(result);
     } catch (error) {
       console.error('Error fetching admin advice:', error);
-      res.status(500).json({ 
-        error: 'Failed to fetch advice data',
-        code: 'FETCH_FAILED'
+      // Return empty result instead of error to prevent crashes
+      res.json({ 
+        advice: [], 
+        pagination: { page: 1, limit: 20, total: 0, pages: 0 } 
       });
     }
   }

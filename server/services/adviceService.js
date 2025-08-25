@@ -70,9 +70,11 @@ class AdviceService {
         advice = await Advice.getActiveAdvice({ limit, type });
       }
 
-      return advice;
+      return advice || [];
     } catch (error) {
-      throw new Error(`Failed to get public advice: ${error.message}`);
+      console.error('Error in getPublicAdvice:', error);
+      // Return empty array instead of throwing error
+      return [];
     }
   }
 
@@ -106,7 +108,7 @@ class AdviceService {
       const total = await Advice.countDocuments(query);
 
       return {
-        advice,
+        advice: advice || [],
         pagination: {
           page,
           limit,
@@ -115,7 +117,17 @@ class AdviceService {
         }
       };
     } catch (error) {
-      throw new Error(`Failed to get all advice: ${error.message}`);
+      console.error('Error in getAllAdvice:', error);
+      // Return empty result instead of throwing error
+      return {
+        advice: [],
+        pagination: {
+          page: 1,
+          limit: 50,
+          total: 0,
+          pages: 0
+        }
+      };
     }
   }
 

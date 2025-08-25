@@ -194,9 +194,10 @@ const ProtectedAdminDashboard = ({ onLogout }) => {
       const response = await axios.get('/api/admin/advice?limit=10', {
         headers: { Authorization: `Bearer ${token}` }
       });
-      setAdviceList(response.data.advice);
+      setAdviceList(response.data.advice || []);
     } catch (error) {
       console.error('Error fetching advice:', error);
+      setAdviceList([]); // Set empty array on error
       showNotification('Error fetching advice', 'error');
     }
     setLoadingAdvice(false);

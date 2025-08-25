@@ -53,16 +53,17 @@ const UserPage = () => {
     }
   };
 
-  const fetchAdvice = async () => {
-    try {
-      const response = await axios.get('/api/advice?limit=5&featured=true');
-      setAdvice(response.data.advice);
-    } catch (error) {
-      console.error('Error fetching advice:', error);
-    } finally {
-      setLoadingAdvice(false);
-    }
-  };
+      const fetchAdvice = async () => {
+      try {
+        const response = await axios.get('/api/advice?limit=5&featured=true');
+        setAdvice(response.data.advice || []);
+      } catch (error) {
+        console.error('Error fetching advice:', error);
+        setAdvice([]); // Set empty array on error
+      } finally {
+        setLoadingAdvice(false);
+      }
+    };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -83,6 +84,8 @@ const UserPage = () => {
         setCompanyInfo(response.data.companyInfo);
       } catch (error) {
         console.error('Error fetching company info:', error);
+        // Set null to hide the section on error
+        setCompanyInfo(null);
       }
     };
 
