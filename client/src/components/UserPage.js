@@ -60,6 +60,8 @@ const UserPage = () => {
   });
   const [advice, setAdvice] = useState([]);
   const [loadingAdvice, setLoadingAdvice] = useState(true);
+  const [notification, setNotification] = useState(null);
+  const [refreshing, setRefreshing] = useState(false);
 
   const currencyInfo = {
     USD: { 
@@ -135,12 +137,14 @@ const UserPage = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        console.log('🔄 Fetching currency data...');
         const response = await axios.get('/api/currencies');
+        console.log('📊 Received currency data:', response.data.currencies);
         setCurrencies(response.data.currencies);
         setLastUpdate(new Date().toISOString());
         setLoading(false);
       } catch (error) {
-        console.error('Error fetching currencies:', error);
+        console.error('❌ Error fetching currencies:', error);
         setLoading(false);
       }
     };
@@ -177,8 +181,24 @@ const UserPage = () => {
     
     newSocket.on('currencyUpdate', (updatedCurrencies) => {
       console.log('Received real-time currency update:', updatedCurrencies);
-      setCurrencies(updatedCurrencies);
-      setLastUpdate(new Date().toISOString());
+      
+      // Handle different update formats
+      if (updatedCurrencies && typeof updatedCurrencies === 'object') {
+        if (updatedCurrencies.deleted) {
+          // Currency was deleted, refresh all data
+          fetchData();
+        } else if (Array.isArray(updatedCurrencies)) {
+          // Array of currencies received
+          setCurrencies(updatedCurrencies);
+          setLastUpdate(new Date().toISOString());
+        } else {
+          // Object with currency codes as keys
+          setCurrencies(updatedCurrencies);
+          setLastUpdate(new Date().toISOString());
+        }
+        
+        showNotification('Rates updated in real-time!', 'success');
+      }
     });
     
     newSocket.on('adviceUpdate', (data) => {
@@ -189,9 +209,39 @@ const UserPage = () => {
     // Auto-refresh every 30 seconds
     const interval = setInterval(fetchData, 30000);
     
+    // Manual refresh function
+    const manualRefresh = () => {
+      fetchData();
+      showNotification('Rates refreshed manually!', 'success');
+    };
+    
+    // Expose manual refresh globally for admin updates
+    window.refreshCurrencyRates = manualRefresh;
+    
+    // Refresh when page becomes visible (when user switches back to tab)
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        fetchData();
+        showNotification('Rates refreshed on page focus!', 'success');
+      }
+    };
+    
+    // Check for updates every 10 seconds (more frequent than auto-refresh)
+    const updateCheckInterval = setInterval(() => {
+      // Only check if we're not already loading
+      if (!loading) {
+        fetchData();
+      }
+    }, 10000);
+    
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    
     return () => {
       newSocket.close();
       clearInterval(interval);
+      clearInterval(updateCheckInterval);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      delete window.refreshCurrencyRates;
     };
   }, []);
 
@@ -199,6 +249,11 @@ const UserPage = () => {
 
   const formatNumber = (number) => {
     return new Intl.NumberFormat('en-US').format(number);
+  };
+
+  const showNotification = (text, type = 'success') => {
+    setNotification({ text, type });
+    setTimeout(() => setNotification(null), 3000);
   };
 
   const formatDate = (dateString) => {
@@ -223,6 +278,25 @@ const UserPage = () => {
 
   return (
     <div className="container">
+      {notification && (
+        <div style={{
+          position: 'fixed',
+          top: '20px',
+          right: '20px',
+          background: notification.type === 'success' ? '#10b981' : '#ef4444',
+          color: 'white',
+          padding: '12px 20px',
+          borderRadius: '8px',
+          zIndex: 1000,
+          boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px'
+        }}>
+          {notification.type === 'success' ? '✅' : '❌'}
+          {notification.text}
+        </div>
+      )}
       <div className="card">
         <div className="header" style={{
           background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
@@ -346,6 +420,49 @@ const UserPage = () => {
             }}>
               📊 {Object.keys(currencies).length} عملة متاحة
             </div>
+            
+            {/* Manual refresh button */}
+            <button
+              onClick={() => {
+                setRefreshing(true);
+                const fetchData = async () => {
+                  try {
+                    const response = await axios.get('/api/currencies');
+                    setCurrencies(response.data.currencies);
+                    setLastUpdate(new Date().toISOString());
+                    showNotification('Rates refreshed manually!', 'success');
+                  } catch (error) {
+                    console.error('Error fetching currencies:', error);
+                    showNotification('Error refreshing rates', 'error');
+                  } finally {
+                    setRefreshing(false);
+                  }
+                };
+                fetchData();
+              }}
+              disabled={refreshing}
+              style={{
+                background: 'rgba(255, 255, 255, 0.2)',
+                border: '1px solid rgba(255, 255, 255, 0.3)',
+                color: 'white',
+                padding: '8px 16px',
+                borderRadius: '20px',
+                fontSize: '0.9rem',
+                fontWeight: '600',
+                cursor: 'pointer',
+                backdropFilter: 'blur(10px)',
+                transition: 'all 0.3s ease',
+                marginTop: '10px'
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.background = 'rgba(255, 255, 255, 0.3)';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.background = 'rgba(255, 255, 255, 0.2)';
+              }}
+            >
+              {refreshing ? '⏳ جاري التحديث...' : '🔄 تحديث فوري'}
+            </button>
           </div>
         </div>
 

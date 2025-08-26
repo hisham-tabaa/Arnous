@@ -313,14 +313,20 @@ const ProtectedAdminDashboard = ({ onLogout }) => {
         return acc;
       }, {});
 
+      console.log('🔄 Admin updating currencies:', currencyData);
+      
       await axios.post('/api/currencies', 
         { currencies: currencyData },
         { headers: { Authorization: `Bearer ${token}` }}
       );
       
+      console.log('✅ Currencies updated on server, refreshing data...');
+      
       // Refresh data  
       const response = await axios.get('/api/currencies');
       const fetchedCurrencies = response.data.currencies;
+      
+      console.log('📊 Fetched updated currencies:', fetchedCurrencies);
       
       if (fetchedCurrencies) {
         setCurrencies(prev => ({
@@ -346,6 +352,16 @@ const ProtectedAdminDashboard = ({ onLogout }) => {
       setMessage(msgResponse.data.message);
       
       showNotification('Currency rates updated successfully!');
+      
+      // Trigger refresh on user page if it's open
+      if (window.opener && window.opener.refreshCurrencyRates) {
+        window.opener.refreshCurrencyRates();
+      }
+      
+      // Also try to refresh if user page is in same window
+      if (window.refreshCurrencyRates) {
+        window.refreshCurrencyRates();
+      }
     } catch (error) {
       if (error.response?.status === 401) {
         handleLogout();
