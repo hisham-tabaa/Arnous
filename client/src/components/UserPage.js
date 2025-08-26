@@ -349,7 +349,7 @@ const UserPage = () => {
                   width: window.innerWidth <= 768 ? '100px' : '120px', 
                   height: window.innerWidth <= 768 ? '100px' : '120px', 
                   borderRadius: '50%',
-                  border: '4px solid rgba(255, 215, 0, 0.8)',
+                  border: '4px solid rgb(251, 255, 0)',
                   boxShadow: '0 8px 32px rgba(255, 215, 0, 0.4), 0 0 20px rgba(255, 215, 0, 0.3)',
                   filter: 'brightness(1.3) saturate(1.4) hue-rotate(10deg)',
                   transition: 'all 0.3s ease',
