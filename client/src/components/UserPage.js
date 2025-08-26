@@ -19,21 +19,21 @@ const UserPage = () => {
   const [lastUpdate, setLastUpdate] = useState(null);
   const [connected, setConnected] = useState(false);
   const [companyInfo, setCompanyInfo] = useState({
-    companyName: 'شركة أرنوس للصرافة',
+    companyName: 'شركة عرنوس للصرافة',
     companyNameEn: 'Arnous Exchange Company',
-    address: 'دمشق - شارع الثورة - مقابل وزارة التجارة الداخلية',
-    phone: '+963 11 2233445',
-    mobile: '+963 988 123 456',
-    email: 'info@arnous-exchange.com',
+    address: 'دمشق - شارع بغداد - عين الكرش  = ',
+    phone: '011 2322767 , 011 2322702',
+    mobile: '+963966106106',
+    email: 'arnous.establishment@hotmail.com',
     website: 'https://arnous-production.up.railway.app',
     workingHours: {
-      ar: 'من السبت إلى الخميس: 9:00 ص - 6:00 م'
+      ar: 'من السبت إلى الخميس: 9:00 ص - 9:00 م'
     },
     services: {
       ar: [
         'صرافة العملات الأجنبية',
         'تحويلات مالية داخلية وخارجية',
-        'خدمات الدفع الإلكتروني',
+        'شام كاش خدمات الدفع الإلكتروني',
         'استشارات مالية'
       ]
     },
@@ -52,7 +52,7 @@ const UserPage = () => {
       },
       whatsapp: {
         name: 'WhatsApp',
-        url: 'https://wa.me/963988123456'
+        url: 'https://wa.me/96366106106'
       }
     }
   });
@@ -87,6 +87,34 @@ const UserPage = () => {
       flag: '🇹🇷',
       color: '#f59e0b',
       description: 'Turkish Lira'
+    },
+    JPY: { 
+      name: 'Japanese Yen', 
+      icon: Yen, 
+      flag: '🇯🇵',
+      color: '#dc2626',
+      description: 'Japanese Yen'
+    },
+    SAR: { 
+      name: 'Saudi Riyal', 
+      icon: Coins, 
+      flag: '🇸🇦',
+      color: '#059669',
+      description: 'Saudi Riyal'
+    },
+    JOD: { 
+      name: 'Jordanian Dinar', 
+      icon: Coins, 
+      flag: '🇯🇴',
+      color: '#7c3aed',
+      description: 'Jordanian Dinar'
+    },
+    KWD: { 
+      name: 'Kuwaiti Dinar', 
+      icon: Coins, 
+      flag: '🇰🇼',
+      color: '#ea580c',
+      description: 'Kuwaiti Dinar'
     }
   };
 
@@ -194,31 +222,137 @@ const UserPage = () => {
   return (
     <div className="container">
       <div className="card">
-        <div className="header">
-          <div className="logo-section">
-            <div className="logo-container">
-              <img src={Logo} alt="Arnous Logo" className="main-logo" />
-              <div className="logo-glow"></div>
+        <div className="header" style={{
+          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+          borderRadius: '20px',
+          padding: '32px',
+          marginBottom: '30px',
+          color: 'white',
+          textAlign: 'center',
+          position: 'relative',
+          overflow: 'hidden'
+        }}>
+          {/* Background pattern */}
+          <div style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'url("data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="white" fill-opacity="0.05"%3E%3Ccircle cx="30" cy="30" r="2"/%3E%3C/g%3E%3C/svg%3E")',
+            zIndex: 0
+          }} />
+          
+          <div style={{ position: 'relative', zIndex: 1 }}>
+            <div className="logo-section" style={{ marginBottom: '24px' }}>
+              <div className="logo-container" style={{ marginBottom: '16px' }}>
+                <img src={Logo} alt="Arnous Logo" className="main-logo" style={{ 
+                  width: '80px', 
+                  height: '80px', 
+                  borderRadius: '50%',
+                  border: '3px solid rgba(255, 255, 255, 0.3)',
+                  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
+                }} />
+              </div>
+              <div className="title-section">
+                <h1 className="main-title" style={{ 
+                  fontSize: '2.5rem', 
+                  fontWeight: '800', 
+                  margin: '0 0 16px 0',
+                  textShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
+                }}>
+                  💱 أسعار الصرف اليوم
+                </h1>
+                <div style={{
+                  width: '80px',
+                  height: '4px',
+                  background: 'linear-gradient(90deg, #fbbf24 0%, #f59e0b 100%)',
+                  margin: '0 auto',
+                  borderRadius: '2px'
+                }}></div>
+              </div>
             </div>
-            <div className="title-section">
-              <h1 className="main-title">💱 أسعار الصرف اليوم</h1>
-              <div className="title-decoration"></div>
+            
+            <p className="subtitle" style={{ 
+              fontSize: '1.2rem', 
+              margin: '0 0 24px 0',
+              opacity: 0.9,
+              fontWeight: '500'
+            }}>
+              أحدث أسعار صرف العملات مقابل الليرة السورية
+            </p>
+            
+            <div style={{
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              gap: '16px',
+              marginBottom: '20px',
+              flexWrap: 'wrap'
+            }}>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                background: 'rgba(255, 255, 255, 0.2)',
+                padding: '12px 20px',
+                borderRadius: '25px',
+                backdropFilter: 'blur(10px)',
+                border: '1px solid rgba(255, 255, 255, 0.3)'
+              }}>
+                <div style={{ 
+                  width: '12px', 
+                  height: '12px', 
+                  borderRadius: '50%',
+                  background: connected ? '#10b981' : '#ef4444',
+                  boxShadow: connected ? '0 0 8px #10b981' : '0 0 8px #ef4444'
+                }}></div>
+                <span style={{ fontWeight: '600' }}>
+                  {connected ? 'متصل - تحديث فوري' : 'غير متصل'}
+                </span>
+              </div>
+              
+              {lastUpdate && (
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  background: 'rgba(255, 255, 255, 0.2)',
+                  padding: '12px 20px',
+                  borderRadius: '25px',
+                  backdropFilter: 'blur(10px)',
+                  border: '1px solid rgba(255, 255, 255, 0.3)'
+                }}>
+                  <Clock size={18} />
+                  <span style={{ fontWeight: '600' }}>
+                    آخر تحديث: {formatDate(lastUpdate)}
+                  </span>
+                </div>
+              )}
+            </div>
+            
+            {/* Currency count badge */}
+            <div style={{
+              display: 'inline-block',
+              background: 'rgba(255, 255, 255, 0.2)',
+              padding: '8px 16px',
+              borderRadius: '20px',
+              fontSize: '0.9rem',
+              fontWeight: '600',
+              backdropFilter: 'blur(10px)',
+              border: '1px solid rgba(255, 255, 255, 0.3)'
+            }}>
+              📊 {Object.keys(currencies).length} عملة متاحة
             </div>
           </div>
-          <p className="subtitle">أحدث أسعار صرف العملات مقابل الليرة السورية</p>
-          <div className={`status-indicator ${connected ? 'status-connected' : 'status-disconnected'}`}>
-            <div className={connected ? 'text-green-500' : 'text-red-500'}>●</div>
-            {connected ? 'متصل - تحديث فوري' : 'غير متصل'}
-          </div>
-          {lastUpdate && (
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginTop: '10px', color: '#718096' }}>
-              <Clock size={16} />
-              آخر تحديث: {formatDate(lastUpdate)}
-            </div>
-          )}
         </div>
 
-        <div className="currency-grid">
+        <div className="currency-grid" style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))',
+          gap: '24px',
+          marginTop: '30px'
+        }}>
           {Object.keys(currencies).map(currency => {
             const info = currencyInfo[currency];
             const data = currencies[currency];
@@ -228,48 +362,322 @@ const UserPage = () => {
               <div 
                 key={currency} 
                 className="currency-item"
-                style={{ borderLeftColor: info.color }}
+                style={{ 
+                  borderLeftColor: info.color,
+                  background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
+                  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+                  border: '1px solid #e2e8f0',
+                  borderRadius: '16px',
+                  padding: '24px',
+                  transition: 'all 0.3s ease',
+                  position: 'relative',
+                  overflow: 'hidden'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-4px)';
+                  e.currentTarget.style.boxShadow = '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)';
+                }}
               >
-                <div className="currency-label">
-                  <span className="currency-flag">{info.flag}</span>
-                  <Icon size={24} style={{ color: info.color }} />
-                  <div>
-                    <div className="currency-name">{info.name}</div>
-                    <div style={{ fontSize: '0.9rem', color: '#718096' }}>
-                      {info.description}
-                    </div>
-                  </div>
-                </div>
+                {/* Background accent */}
+                <div style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  height: '4px',
+                  background: `linear-gradient(90deg, ${info.color} 0%, ${info.color}80 100%)`,
+                  borderRadius: '16px 16px 0 0'
+                }} />
                 
-                <div className="currency-rates">
-                  <div className="rate-item">
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#22c55e' }}>
-                      <TrendingUp size={16} />
-                      <span style={{ fontWeight: 'bold' }}>شراء:</span>
-                    </div>
-                    <div className="rate-value">
-                      {formatNumber(data.buyRate)} <span style={{ fontSize: '1.2rem', color: '#718096' }}>ل.س</span>
+                <div className="currency-label" style={{ marginBottom: '20px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
+                    <span className="currency-flag" style={{ fontSize: '2rem' }}>{info.flag}</span>
+                    <Icon size={28} style={{ color: info.color }} />
+                    <div>
+                      <div className="currency-name" style={{ 
+                        fontSize: '1.25rem', 
+                        fontWeight: '700', 
+                        color: '#1e293b',
+                        marginBottom: '4px'
+                      }}>
+                        {info.name}
+                      </div>
+                      <div style={{ 
+                        fontSize: '0.9rem', 
+                        color: '#64748b',
+                        fontWeight: '500'
+                      }}>
+                        {info.description}
+                      </div>
                     </div>
                   </div>
                   
-                  <div className="rate-item">
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#ef4444' }}>
-                      <TrendingDown size={16} />
-                      <span style={{ fontWeight: 'bold' }}>بيع:</span>
+                  {/* Currency code badge */}
+                  <div style={{
+                    display: 'inline-block',
+                    background: `linear-gradient(135deg, ${info.color} 0%, ${info.color}80 100%)`,
+                    color: 'white',
+                    padding: '6px 12px',
+                    borderRadius: '20px',
+                    fontSize: '0.85rem',
+                    fontWeight: '600',
+                    textAlign: 'center',
+                    minWidth: '60px'
+                  }}>
+                    {currency}
+                  </div>
+                </div>
+                
+                <div className="currency-rates" style={{ marginBottom: '20px' }}>
+                  <div className="rate-item" style={{ 
+                    background: 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)',
+                    padding: '16px',
+                    borderRadius: '12px',
+                    marginBottom: '12px',
+                    border: '1px solid #bbf7d0'
+                  }}>
+                    <div style={{ 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      gap: '8px', 
+                      color: '#16a34a',
+                      marginBottom: '8px'
+                    }}>
+                      <TrendingUp size={18} />
+                      <span style={{ fontWeight: '600', fontSize: '0.95rem' }}>سعر الشراء</span>
                     </div>
-                    <div className="rate-value">
-                      {formatNumber(data.sellRate)} <span style={{ fontSize: '1.2rem', color: '#718096' }}>ل.س</span>
+                    <div className="rate-value" style={{
+                      fontSize: '1.5rem',
+                      fontWeight: '700',
+                      color: '#15803d',
+                      textAlign: 'center'
+                    }}>
+                      {formatNumber(data.buyRate)} <span style={{ fontSize: '1.1rem', color: '#16a34a' }}>ل.س</span>
+                    </div>
+                  </div>
+                  
+                  <div className="rate-item" style={{ 
+                    background: 'linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%)',
+                    padding: '16px',
+                    borderRadius: '12px',
+                    border: '1px solid #fecaca'
+                  }}>
+                    <div style={{ 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      gap: '8px', 
+                      color: '#dc2626',
+                      marginBottom: '8px'
+                    }}>
+                      <TrendingDown size={18} />
+                      <span style={{ fontWeight: '600', fontSize: '0.95rem' }}>سعر البيع</span>
+                    </div>
+                    <div className="rate-value" style={{
+                      fontSize: '1.5rem',
+                      fontWeight: '700',
+                      color: '#b91c1c',
+                      textAlign: 'center'
+                    }}>
+                      {formatNumber(data.sellRate)} <span style={{ fontSize: '1.1rem', color: '#dc2626' }}>ل.س</span>
                     </div>
                   </div>
                 </div>
                 
-                <div className="last-updated">
-                  <TrendingUp size={14} />
+                {/* Spread information */}
+                <div style={{
+                  background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
+                  padding: '12px 16px',
+                  borderRadius: '10px',
+                  marginBottom: '16px',
+                  border: '1px solid #cbd5e1'
+                }}>
+                  <div style={{ 
+                    display: 'flex', 
+                    justifyContent: 'space-between', 
+                    alignItems: 'center',
+                    fontSize: '0.9rem'
+                  }}>
+                    <span style={{ color: '#475569', fontWeight: '500' }}>الفرق:</span>
+                    <span style={{ 
+                      color: '#1e293b', 
+                      fontWeight: '600',
+                      background: 'white',
+                      padding: '4px 8px',
+                      borderRadius: '6px',
+                      border: '1px solid #e2e8f0'
+                    }}>
+                      {formatNumber(data.sellRate - data.buyRate)} ل.س
+                    </span>
+                  </div>
+                </div>
+                
+                <div className="last-updated" style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  fontSize: '0.85rem',
+                  color: '#64748b',
+                  justifyContent: 'center',
+                  padding: '12px',
+                  background: 'white',
+                  borderRadius: '8px',
+                  border: '1px solid #e2e8f0'
+                }}>
+                  <Clock size={14} />
                   آخر تحديث: {formatDate(data.lastUpdated)}
                 </div>
               </div>
             );
           })}
+        </div>
+
+        {/* Currency Summary Section */}
+        <div className="card" style={{ 
+          marginTop: '30px',
+          background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
+          borderRadius: '20px',
+          padding: '24px',
+          border: '1px solid #cbd5e1'
+        }}>
+          <h3 style={{ 
+            color: '#1e293b', 
+            marginBottom: '20px', 
+            textAlign: 'center',
+            fontSize: '1.5rem',
+            fontWeight: '700'
+          }}>
+            📊 ملخص العملات
+          </h3>
+          
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+            gap: '20px',
+            marginBottom: '20px'
+          }}>
+            <div style={{
+              background: 'white',
+              padding: '20px',
+              borderRadius: '16px',
+              textAlign: 'center',
+              border: '1px solid #e2e8f0',
+              boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)'
+            }}>
+              <div style={{ fontSize: '2rem', marginBottom: '8px' }}>💱</div>
+              <div style={{ fontSize: '1.5rem', fontWeight: '700', color: '#1e293b', marginBottom: '4px' }}>
+                {Object.keys(currencies).length}
+              </div>
+              <div style={{ color: '#64748b', fontSize: '0.9rem' }}>عملة متاحة</div>
+            </div>
+            
+            <div style={{
+              background: 'white',
+              padding: '20px',
+              borderRadius: '16px',
+              textAlign: 'center',
+              border: '1px solid #e2e8f0',
+              boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)'
+            }}>
+              <div style={{ fontSize: '2rem', marginBottom: '8px' }}>🔄</div>
+              <div style={{ fontSize: '1.5rem', fontWeight: '700', color: '#1e293b', marginBottom: '4px' }}>
+                {lastUpdate ? formatDate(lastUpdate).split(' ')[0] : 'N/A'}
+              </div>
+              <div style={{ color: '#64748b', fontSize: '0.9rem' }}>آخر تحديث</div>
+            </div>
+            
+            <div style={{
+              background: 'white',
+              padding: '20px',
+              borderRadius: '16px',
+              textAlign: 'center',
+              border: '1px solid #e2e8f0',
+              boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)'
+            }}>
+              <div style={{ fontSize: '2rem', marginBottom: '8px' }}>📡</div>
+              <div style={{ 
+                fontSize: '1.5rem', 
+                fontWeight: '700', 
+                color: connected ? '#10b981' : '#ef4444',
+                marginBottom: '4px'
+              }}>
+                {connected ? 'متصل' : 'غير متصل'}
+              </div>
+              <div style={{ color: '#64748b', fontSize: '0.9rem' }}>حالة الاتصال</div>
+            </div>
+            
+            <div style={{
+              background: 'white',
+              padding: '20px',
+              borderRadius: '16px',
+              textAlign: 'center',
+              border: '1px solid #e2e8f0',
+              boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)'
+            }}>
+              <div style={{ fontSize: '2rem', marginBottom: '8px' }}>⏰</div>
+              <div style={{ fontSize: '1.5rem', fontWeight: '700', color: '#1e293b', marginBottom: '4px' }}>
+                30 ث
+              </div>
+              <div style={{ color: '#64748b', fontSize: '0.9rem' }}>معدل التحديث</div>
+            </div>
+          </div>
+          
+          <div style={{
+            background: 'white',
+            padding: '20px',
+            borderRadius: '16px',
+            border: '1px solid #e2e8f0',
+            boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)'
+          }}>
+            <h4 style={{ 
+              color: '#1e293b', 
+              marginBottom: '16px', 
+              textAlign: 'center',
+              fontSize: '1.2rem',
+              fontWeight: '600'
+            }}>
+              🎯 العملات المتاحة
+            </h4>
+            <div style={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              gap: '12px',
+              justifyContent: 'center'
+            }}>
+              {Object.keys(currencies).map(currency => {
+                const info = currencyInfo[currency];
+                return (
+                  <div key={currency} style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    background: `linear-gradient(135deg, ${info.color} 0%, ${info.color}80 100%)`,
+                    color: 'white',
+                    padding: '8px 16px',
+                    borderRadius: '20px',
+                    fontSize: '0.9rem',
+                    fontWeight: '600',
+                    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
+                  }}>
+                    <span>{info.flag}</span>
+                    <span>{info.name}</span>
+                    <span style={{
+                      background: 'rgba(255, 255, 255, 0.2)',
+                      padding: '2px 8px',
+                      borderRadius: '12px',
+                      fontSize: '0.8rem',
+                      fontWeight: '700'
+                    }}>
+                      {currency}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
         </div>
 
         {/* Company Information Section */}
@@ -536,9 +944,33 @@ const UserPage = () => {
           <button 
             className="btn btn-primary" 
             onClick={() => window.location.reload()}
-            style={{ marginTop: '20px' }}
+            style={{ 
+              marginTop: '20px',
+              background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
+              border: 'none',
+              color: 'white',
+              padding: '16px 32px',
+              borderRadius: '12px',
+              fontSize: '1.1rem',
+              fontWeight: '600',
+              cursor: 'pointer',
+              transition: 'all 0.3s ease',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px',
+              margin: '20px auto 0',
+              boxShadow: '0 4px 6px -1px rgba(59, 130, 246, 0.3)'
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.transform = 'translateY(-2px)';
+              e.target.style.boxShadow = '0 8px 15px -3px rgba(59, 130, 246, 0.4)';
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.transform = 'translateY(0)';
+              e.target.style.boxShadow = '0 4px 6px -1px rgba(59, 130, 246, 0.3)';
+            }}
           >
-            <RefreshCw size={16} />
+            <RefreshCw size={20} />
             تحديث الأسعار
           </button>
         </div>
