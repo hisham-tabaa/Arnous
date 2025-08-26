@@ -140,53 +140,11 @@ const UserPage = () => {
         console.log('🔄 Fetching currency data...');
         const response = await axios.get('/api/currencies');
         console.log('📊 Received currency data:', response.data.currencies);
-        
-        // Get currencies from API
-        const apiCurrencies = response.data.currencies || {};
-        
-        // Create a complete currency object with all currencies (including new ones)
-        const allCurrencies = {};
-        
-        // Add all currencies from currencyInfo (including new ones)
-        Object.keys(currencyInfo).forEach(code => {
-          if (apiCurrencies[code]) {
-            // Use API data if available
-            allCurrencies[code] = apiCurrencies[code];
-          } else {
-            // Use default data for new currencies that don't exist in API yet
-            allCurrencies[code] = {
-              code: code,
-              name: currencyInfo[code].name,
-              buyRate: 0,
-              sellRate: 0,
-              isActive: true,
-              lastUpdated: new Date().toISOString()
-            };
-          }
-        });
-        
-        console.log('📊 Final currencies to display:', allCurrencies);
-        setCurrencies(allCurrencies);
+        setCurrencies(response.data.currencies);
         setLastUpdate(new Date().toISOString());
         setLoading(false);
       } catch (error) {
         console.error('❌ Error fetching currencies:', error);
-        
-        // Fallback: show all currencies with default values
-        const fallbackCurrencies = {};
-        Object.keys(currencyInfo).forEach(code => {
-          fallbackCurrencies[code] = {
-            code: code,
-            name: currencyInfo[code].name,
-            buyRate: 0,
-            sellRate: 0,
-            isActive: true,
-            lastUpdated: new Date().toISOString()
-          };
-        });
-        
-        setCurrencies(fallbackCurrencies);
-        setLastUpdate(new Date().toISOString());
         setLoading(false);
       }
     };
@@ -235,8 +193,8 @@ const UserPage = () => {
           setLastUpdate(new Date().toISOString());
         } else {
           // Object with currency codes as keys
-          setCurrencies(updatedCurrencies);
-          setLastUpdate(new Date().toISOString());
+      setCurrencies(updatedCurrencies);
+      setLastUpdate(new Date().toISOString());
         }
         
         showNotification('Rates updated in real-time!', 'success');
@@ -339,25 +297,8 @@ const UserPage = () => {
           {notification.text}
         </div>
       )}
-              {/* Status message for new currencies */}
-        {Object.keys(currencies).some(code => ['JPY', 'SAR', 'JOD', 'KWD'].includes(code) && currencies[code].buyRate === 0) && (
-          <div style={{
-            background: 'linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)',
-            border: '1px solid #3b82f6',
-            color: '#1e40af',
-            padding: '16px 20px',
-            borderRadius: '12px',
-            fontSize: '0.95rem',
-            fontWeight: '600',
-            marginBottom: '20px',
-            textAlign: 'center'
-          }}>
-            ℹ️ بعض العملات الجديدة تحتاج إلى تحديث الأسعار من قبل المدير
-          </div>
-        )}
-        
-        <div className="card">
-          <div className="header" style={{
+      <div className="card">
+        <div className="header" style={{
           background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
           borderRadius: '20px',
           padding: '32px',
@@ -388,8 +329,8 @@ const UserPage = () => {
                   border: '3px solid rgba(255, 255, 255, 0.3)',
                   boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
                 }} />
-              </div>
-              <div className="title-section">
+            </div>
+            <div className="title-section">
                 <h1 className="main-title" style={{ 
                   fontSize: '2.5rem', 
                   fontWeight: '800', 
@@ -443,11 +384,11 @@ const UserPage = () => {
                   boxShadow: connected ? '0 0 8px #10b981' : '0 0 8px #ef4444'
                 }}></div>
                 <span style={{ fontWeight: '600' }}>
-                  {connected ? 'متصل - تحديث فوري' : 'غير متصل'}
+            {connected ? 'متصل - تحديث فوري' : 'غير متصل'}
                 </span>
-              </div>
+          </div>
               
-              {lastUpdate && (
+          {lastUpdate && (
                 <div style={{
                   display: 'flex',
                   alignItems: 'center',
@@ -460,12 +401,12 @@ const UserPage = () => {
                 }}>
                   <Clock size={18} />
                   <span style={{ fontWeight: '600' }}>
-                    آخر تحديث: {formatDate(lastUpdate)}
+              آخر تحديث: {formatDate(lastUpdate)}
                   </span>
-                </div>
-              )}
             </div>
-            
+          )}
+        </div>
+
             {/* Currency count badge */}
             <div style={{
               display: 'inline-block',
@@ -478,38 +419,6 @@ const UserPage = () => {
               border: '1px solid rgba(255, 255, 255, 0.3)'
             }}>
               📊 {Object.keys(currencies).length} عملة متاحة
-            </div>
-            
-            {/* New currencies notice */}
-            <div style={{
-              background: 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)',
-              border: '1px solid #f59e0b',
-              color: '#92400e',
-              padding: '12px 16px',
-              borderRadius: '12px',
-              fontSize: '0.9rem',
-              fontWeight: '600',
-              marginTop: '10px',
-              textAlign: 'center'
-            }}>
-              🆕 تم إضافة 4 عملات جديدة: الين الياباني، الريال السعودي، الدينار الأردني، الدينار الكويتي
-              <br />
-              <span style={{ fontSize: '0.8rem', opacity: 0.8 }}>
-                💡 يمكن للمدير تحديث أسعار هذه العملات من لوحة التحكم
-              </span>
-              <br />
-              <a 
-                href="/admin/login" 
-                style={{ 
-                  color: '#92400e', 
-                  textDecoration: 'underline',
-                  fontSize: '0.8rem',
-                  marginTop: '8px',
-                  display: 'inline-block'
-                }}
-              >
-                🔐 تسجيل دخول المدير
-              </a>
             </div>
             
             {/* Manual refresh button */}
@@ -563,16 +472,9 @@ const UserPage = () => {
           gap: '24px',
           marginTop: '30px'
         }}>
-          {Object.keys(currencyInfo).map(currency => {
+          {Object.keys(currencies).map(currency => {
             const info = currencyInfo[currency];
-            const data = currencies[currency] || {
-              code: currency,
-              name: info.name,
-              buyRate: 0,
-              sellRate: 0,
-              isActive: true,
-              lastUpdated: null
-            };
+            const data = currencies[currency];
             const Icon = info.icon;
             
             return (
@@ -614,7 +516,7 @@ const UserPage = () => {
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
                     <span className="currency-flag" style={{ fontSize: '2rem' }}>{info.flag}</span>
                     <Icon size={28} style={{ color: info.color }} />
-                    <div>
+                  <div>
                       <div className="currency-name" style={{ 
                         fontSize: '1.25rem', 
                         fontWeight: '700', 
@@ -628,7 +530,7 @@ const UserPage = () => {
                         color: '#64748b',
                         fontWeight: '500'
                       }}>
-                        {info.description}
+                      {info.description}
                       </div>
                     </div>
                   </div>
@@ -647,23 +549,6 @@ const UserPage = () => {
                   }}>
                     {currency}
                   </div>
-                  
-                  {/* New currency indicator */}
-                  {['JPY', 'SAR', 'JOD', 'KWD'].includes(currency) && (
-                    <div style={{
-                      display: 'inline-block',
-                      background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
-                      color: 'white',
-                      padding: '4px 8px',
-                      borderRadius: '12px',
-                      fontSize: '0.75rem',
-                      fontWeight: '600',
-                      textAlign: 'center',
-                      marginLeft: '8px'
-                    }}>
-                      🆕 جديد
-                    </div>
-                  )}
                 </div>
                 
                 <div className="currency-rates" style={{ marginBottom: '20px' }}>
@@ -690,11 +575,7 @@ const UserPage = () => {
                       color: '#15803d',
                       textAlign: 'center'
                     }}>
-                      {data.buyRate > 0 ? (
-                        `${formatNumber(data.buyRate)} <span style={{ fontSize: '1.1rem', color: '#16a34a' }}>ل.س</span>`
-                      ) : (
-                        <span style={{ color: '#6b7280', fontStyle: 'italic', fontSize: '1.1rem' }}>لم يتم تحديد السعر بعد</span>
-                      )}
+                      {formatNumber(data.buyRate)} <span style={{ fontSize: '1.1rem', color: '#16a34a' }}>ل.س</span>
                     </div>
                   </div>
                   
@@ -720,11 +601,7 @@ const UserPage = () => {
                       color: '#b91c1c',
                       textAlign: 'center'
                     }}>
-                      {data.sellRate > 0 ? (
-                        `${formatNumber(data.sellRate)} <span style={{ fontSize: '1.1rem', color: '#dc2626' }}>ل.س</span>`
-                      ) : (
-                        <span style={{ color: '#6b7280', fontStyle: 'italic', fontSize: '1.1rem' }}>لم يتم تحديد السعر بعد</span>
-                      )}
+                      {formatNumber(data.sellRate)} <span style={{ fontSize: '1.1rem', color: '#dc2626' }}>ل.س</span>
                     </div>
                   </div>
                 </div>
@@ -752,11 +629,7 @@ const UserPage = () => {
                       borderRadius: '6px',
                       border: '1px solid #e2e8f0'
                     }}>
-                      {data.buyRate > 0 && data.sellRate > 0 ? (
-                        `${formatNumber(data.sellRate - data.buyRate)} ل.س`
-                      ) : (
-                        <span style={{ color: '#6b7280', fontStyle: 'italic' }}>غير متوفر</span>
-                      )}
+                      {formatNumber(data.sellRate - data.buyRate)} ل.س
                     </span>
                   </div>
                 </div>
@@ -774,11 +647,7 @@ const UserPage = () => {
                   border: '1px solid #e2e8f0'
                 }}>
                   <Clock size={14} />
-                  {data.lastUpdated ? (
-                    `آخر تحديث: ${formatDate(data.lastUpdated)}`
-                  ) : (
-                    'لم يتم تحديث الأسعار بعد'
-                  )}
+                  آخر تحديث: {formatDate(data.lastUpdated)}
                 </div>
               </div>
             );
@@ -1070,7 +939,7 @@ const UserPage = () => {
             fontSize: '1.1rem',
             lineHeight: '1.6'
           }}>
-            آراء وتوقعات خبراء شركة عرنوس حول أسواق العملات والاقتصاد المحلي والعالم 
+            آراء وتوقعات خبراء أرنوس حول أسواق العملات والاقتصاد المحلي والعالمي
           </p>
           
           {loadingAdvice ? (
