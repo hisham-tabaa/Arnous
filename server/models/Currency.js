@@ -7,7 +7,7 @@ const CurrencySchema = new mongoose.Schema({
     unique: true,
     uppercase: true,
     trim: true,
-    enum: ['USD', 'EUR', 'GBP', 'TRY', 'JPY', 'SAR', 'JOD', 'KWD']
+    enum: ['USD', 'EUR', 'GBP', 'TRY']
   },
   name: {
     type: String,

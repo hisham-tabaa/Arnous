@@ -18,9 +18,7 @@ import {
   LogOut,
   User as UserIcon,
   TrendingUp,
-  TrendingDown,
-  CircleDollarSign,
-  Coins
+  TrendingDown
 } from 'lucide-react';
 import Logo from '../Logo.png';
 
@@ -29,11 +27,7 @@ const ProtectedAdminDashboard = ({ onLogout }) => {
     USD: { buyRate: '', sellRate: '', lastUpdated: null },
     EUR: { buyRate: '', sellRate: '', lastUpdated: null },
     GBP: { buyRate: '', sellRate: '', lastUpdated: null },
-    TRY: { buyRate: '', sellRate: '', lastUpdated: null },
-    JPY: { buyRate: '', sellRate: '', lastUpdated: null },
-    SAR: { buyRate: '', sellRate: '', lastUpdated: null },
-    JOD: { buyRate: '', sellRate: '', lastUpdated: null },
-    KWD: { buyRate: '', sellRate: '', lastUpdated: null }
+    TRY: { buyRate: '', sellRate: '', lastUpdated: null }
   });
   
   const [loading, setLoading] = useState(false);
@@ -60,11 +54,7 @@ const ProtectedAdminDashboard = ({ onLogout }) => {
     USD: { name: 'US Dollar', icon: DollarSign, flag: '🇺🇸' },
     EUR: { name: 'Euro', icon: Euro, flag: '🇪🇺' },
     GBP: { name: 'British Pound', icon: PoundSterling, flag: '🇬🇧' },
-    TRY: { name: 'Turkish Lira', icon: Banknote, flag: '🇹🇷' },
-    JPY: { name: 'Japanese Yen', icon: CircleDollarSign, flag: '🇯🇵' },
-    SAR: { name: 'Saudi Riyal', icon: Coins, flag: '🇸🇦' },
-    JOD: { name: 'Jordanian Dinar', icon: Coins, flag: '🇯🇴' },
-    KWD: { name: 'Kuwaiti Dinar', icon: Coins, flag: '🇰🇼' }
+    TRY: { name: 'Turkish Lira', icon: Banknote, flag: '🇹🇷' }
   };
 
   const socialPlatforms = [
@@ -313,20 +303,14 @@ const ProtectedAdminDashboard = ({ onLogout }) => {
         return acc;
       }, {});
 
-      console.log('🔄 Admin updating currencies:', currencyData);
-      
       await axios.post('/api/currencies', 
         { currencies: currencyData },
         { headers: { Authorization: `Bearer ${token}` }}
       );
       
-      console.log('✅ Currencies updated on server, refreshing data...');
-      
       // Refresh data  
       const response = await axios.get('/api/currencies');
       const fetchedCurrencies = response.data.currencies;
-      
-      console.log('📊 Fetched updated currencies:', fetchedCurrencies);
       
       if (fetchedCurrencies) {
         setCurrencies(prev => ({
@@ -352,16 +336,6 @@ const ProtectedAdminDashboard = ({ onLogout }) => {
       setMessage(msgResponse.data.message);
       
       showNotification('Currency rates updated successfully!');
-      
-      // Trigger refresh on user page if it's open
-      if (window.opener && window.opener.refreshCurrencyRates) {
-        window.opener.refreshCurrencyRates();
-      }
-      
-      // Also try to refresh if user page is in same window
-      if (window.refreshCurrencyRates) {
-        window.refreshCurrencyRates();
-      }
     } catch (error) {
       if (error.response?.status === 401) {
         handleLogout();

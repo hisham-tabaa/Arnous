@@ -156,54 +156,6 @@ db.currencies.insertMany([
     updateHistory: [],
     createdAt: new Date(),
     updatedAt: new Date()
-  },
-  {
-    code: 'JPY',
-    name: 'Japanese Yen',
-    buyRate: 100,
-    sellRate: 102,
-    isActive: true,
-    lastUpdated: new Date(),
-    createdBy: 'system',
-    updateHistory: [],
-    createdAt: new Date(),
-    updatedAt: new Date()
-  },
-  {
-    code: 'SAR',
-    name: 'Saudi Riyal',
-    buyRate: 4000,
-    sellRate: 4020,
-    isActive: true,
-    lastUpdated: new Date(),
-    createdBy: 'system',
-    updateHistory: [],
-    createdAt: new Date(),
-    updatedAt: new Date()
-  },
-  {
-    code: 'JOD',
-    name: 'Jordanian Dinar',
-    buyRate: 21000,
-    sellRate: 21100,
-    isActive: true,
-    lastUpdated: new Date(),
-    createdBy: 'system',
-    updateHistory: [],
-    createdAt: new Date(),
-    updatedAt: new Date()
-  },
-  {
-    code: 'KWD',
-    name: 'Kuwaiti Dinar',
-    buyRate: 49000,
-    sellRate: 49100,
-    isActive: true,
-    lastUpdated: new Date(),
-    createdBy: 'system',
-    updateHistory: [],
-    createdAt: new Date(),
-    updatedAt: new Date()
   }
 ]);
 
@@ -211,4 +163,4 @@ print('✅ MongoDB initialization completed successfully!');
 print('   Database: arnous_exchange');
 print('   User: arnous_user');
 print('   Collections: currencies, users, activitylogs');
-print('   Default currencies: USD, EUR, GBP, TRY, JPY, SAR, JOD, KWD');
+print('   Default currencies: USD, EUR, GBP, TRY');
