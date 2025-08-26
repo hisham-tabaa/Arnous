@@ -18,9 +18,12 @@ const mongoOptions = {
 // Connect to MongoDB
 const connectDB = async () => {
   try {
-    const mongoURI = process.env.NODE_ENV === 'production' 
-      ? process.env.MONGODB_URI_PROD 
-      : process.env.MONGODB_URI;
+    // Prefer explicit production URI, then fall back to common variants
+    const mongoURI = process.env.MONGODB_URI_PROD 
+      || process.env.MONGODB_URI 
+      || process.env.MONGODB_URL 
+      || process.env.MONGO_URL 
+      || process.env.MONGO_PUBLIC_URL;
     
     if (!mongoURI) {
       throw new Error('MongoDB URI is not defined in environment variables');

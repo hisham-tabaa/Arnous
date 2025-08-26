@@ -6,7 +6,12 @@ class CurrencyService {
   static async getAllCurrencies() {
     try {
       const currencies = await Currency.getActiveCurrencies();
-      return currencies.map(currency => currency.getFormattedRates());
+      // Return a keyed map for frontend consumption
+      return currencies.reduce((acc, currency) => {
+        const formatted = currency.getFormattedRates();
+        acc[formatted.code] = formatted;
+        return acc;
+      }, {});
     } catch (error) {
       throw new Error('Failed to fetch currencies');
     }
@@ -46,7 +51,12 @@ class CurrencyService {
         status: 'success'
       });
 
-      return updatedCurrencies.map(currency => currency.getFormattedRates());
+      // Return a keyed map
+      return updatedCurrencies.reduce((acc, currency) => {
+        const formatted = currency.getFormattedRates();
+        acc[formatted.code] = formatted;
+        return acc;
+      }, {});
     } catch (error) {
       // Log failed update
       await ActivityLog.logActivity({
