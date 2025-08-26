@@ -40,7 +40,7 @@ const UserPage = () => {
     socialMedia: {
       facebook: {
         name: 'Facebook',
-        url: 'https://facebook.com/arnous.exchange'
+        url: 'https://www.facebook.com/arnous.ex/'
       },
       instagram: {
         name: 'Instagram',
@@ -52,7 +52,7 @@ const UserPage = () => {
       },
       whatsapp: {
         name: 'WhatsApp',
-        url: 'https://wa.me/96366106106'
+        url: 'https://whatsapp.com/channel/0029Vb6LYzG3GJP3Ait6uc1e'
       }
     }
   });
