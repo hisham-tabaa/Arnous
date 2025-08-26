@@ -8,7 +8,7 @@ Arnous Exchange has been enhanced with **4 new currencies** to provide a more co
 ### 1. 🇯🇵 Japanese Yen (JPY)
 - **Code**: JPY
 - **Name**: Japanese Yen
-- **Icon**: Yen symbol (¥)
+- **Icon**: Circle Dollar Sign
 - **Color**: Red (#dc2626)
 - **Description**: Japanese Yen
 
@@ -125,7 +125,7 @@ Arnous Exchange has been enhanced with **4 new currencies** to provide a more co
 
 ### New Icons Added
 ```javascript
-import { Yen, Coins } from 'lucide-react';
+import { CircleDollarSign, Coins } from 'lucide-react';
 ```
 
 ## 📋 Setup Instructions

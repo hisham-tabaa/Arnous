@@ -9,7 +9,9 @@ import {
   RefreshCw,
   TrendingUp,
   Clock,
-  TrendingDown
+  TrendingDown,
+  CircleDollarSign,
+  Coins
 } from 'lucide-react';
 import Logo from '../Logo.png';
 
@@ -90,7 +92,7 @@ const UserPage = () => {
     },
     JPY: { 
       name: 'Japanese Yen', 
-      icon: Yen, 
+      icon: CircleDollarSign, 
       flag: '🇯🇵',
       color: '#dc2626',
       description: 'Japanese Yen'

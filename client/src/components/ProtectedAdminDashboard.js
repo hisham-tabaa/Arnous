@@ -19,7 +19,7 @@ import {
   User as UserIcon,
   TrendingUp,
   TrendingDown,
-  Yen,
+  CircleDollarSign,
   Coins
 } from 'lucide-react';
 import Logo from '../Logo.png';
@@ -61,7 +61,7 @@ const ProtectedAdminDashboard = ({ onLogout }) => {
     EUR: { name: 'Euro', icon: Euro, flag: '🇪🇺' },
     GBP: { name: 'British Pound', icon: PoundSterling, flag: '🇬🇧' },
     TRY: { name: 'Turkish Lira', icon: Banknote, flag: '🇹🇷' },
-    JPY: { name: 'Japanese Yen', icon: Yen, flag: '🇯🇵' },
+    JPY: { name: 'Japanese Yen', icon: CircleDollarSign, flag: '🇯🇵' },
     SAR: { name: 'Saudi Riyal', icon: Coins, flag: '🇸🇦' },
     JOD: { name: 'Jordanian Dinar', icon: Coins, flag: '🇯🇴' },
     KWD: { name: 'Kuwaiti Dinar', icon: Coins, flag: '🇰🇼' }
