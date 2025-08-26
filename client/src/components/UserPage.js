@@ -140,7 +140,15 @@ const UserPage = () => {
         console.log('🔄 Fetching currency data...');
         const response = await axios.get('/api/currencies');
         console.log('📊 Received currency data:', response.data.currencies);
-        setCurrencies(response.data.currencies);
+        
+        // Convert array to object format for easier rendering
+        const currenciesArray = response.data.currencies;
+        const currenciesObject = {};
+        currenciesArray.forEach(currency => {
+          currenciesObject[currency.code] = currency;
+        });
+        
+        setCurrencies(currenciesObject);
         setLastUpdate(new Date().toISOString());
         setLoading(false);
       } catch (error) {
@@ -188,8 +196,12 @@ const UserPage = () => {
           // Currency was deleted, refresh all data
           fetchData();
         } else if (Array.isArray(updatedCurrencies)) {
-          // Array of currencies received
-          setCurrencies(updatedCurrencies);
+          // Array of currencies received - convert to object format
+          const currenciesObject = {};
+          updatedCurrencies.forEach(currency => {
+            currenciesObject[currency.code] = currency;
+          });
+          setCurrencies(currenciesObject);
           setLastUpdate(new Date().toISOString());
         } else {
           // Object with currency codes as keys
@@ -346,8 +358,8 @@ const UserPage = () => {
                 position: 'relative'
               }}>
                 <img src={Logo} alt="Arnous Logo" className="main-logo" style={{ 
-                  width: window.innerWidth <= 768 ? '100px' : '120px', 
-                  height: window.innerWidth <= 768 ? '100px' : '120px', 
+                  width: window.innerWidth <= 768 ? '130px' : '150px', 
+                  height: window.innerWidth <= 768 ? '130px' : '150px', 
                   borderRadius: '50%',
                   border: '4px solid rgb(251, 255, 0)',
                   boxShadow: '0 8px 32px rgba(255, 215, 0, 0.4), 0 0 20px rgba(255, 215, 0, 0.3)',
@@ -361,8 +373,8 @@ const UserPage = () => {
                   top: '50%',
                   left: '50%',
                   transform: 'translate(-50%, -50%)',
-                  width: window.innerWidth <= 768 ? '130px' : '150px',
-                  height: window.innerWidth <= 768 ? '130px' : '150px',
+                  width: window.innerWidth <= 768 ? '160px' : '180px',
+                  height: window.innerWidth <= 768 ? '160px' : '180px',
                   background: 'radial-gradient(circle, rgba(255, 215, 0, 0.3) 0%, transparent 70%)',
                   borderRadius: '50%',
                   animation: 'pulse 2s infinite',
@@ -412,11 +424,11 @@ const UserPage = () => {
                 display: 'flex',
                 alignItems: 'center',
                 gap: '8px',
-                background: 'rgba(255, 255, 255, 0.2)',
+                background: 'rgba(251, 255, 1, 0.84)',
                 padding: window.innerWidth <= 768 ? '10px 16px' : '12px 20px',
                 borderRadius: '25px',
                 backdropFilter: 'blur(10px)',
-                border: '1px solid rgba(255, 255, 255, 0.3)',
+                border: '1px solid rgba(238, 255, 0, 0.99)',
                 fontSize: window.innerWidth <= 768 ? '0.85rem' : '1rem'
               }}>
                 <div style={{ 
@@ -473,7 +485,15 @@ const UserPage = () => {
                 const fetchData = async () => {
                   try {
                     const response = await axios.get('/api/currencies');
-                    setCurrencies(response.data.currencies);
+                    
+                    // Convert array to object format for easier rendering
+                    const currenciesArray = response.data.currencies;
+                    const currenciesObject = {};
+                    currenciesArray.forEach(currency => {
+                      currenciesObject[currency.code] = currency;
+                    });
+                    
+                    setCurrencies(currenciesObject);
                     setLastUpdate(new Date().toISOString());
                     showNotification('Rates refreshed manually!', 'success');
                   } catch (error) {
