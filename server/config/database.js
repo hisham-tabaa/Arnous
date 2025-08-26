@@ -80,6 +80,34 @@ const initializeDatabase = async () => {
           buyRate: 500,
           sellRate: 510,
           createdBy: 'system'
+        },
+        {
+          code: 'JPY',
+          name: 'Japanese Yen',
+          buyRate: 100,
+          sellRate: 101,
+          createdBy: 'system'
+        },
+        {
+          code: 'SAR',
+          name: 'Saudi Riyal',
+          buyRate: 4000,
+          sellRate: 4010,
+          createdBy: 'system'
+        },
+        {
+          code: 'JOD',
+          name: 'Jordanian Dinar',
+          buyRate: 21000,
+          sellRate: 21100,
+          createdBy: 'system'
+        },
+        {
+          code: 'KWD',
+          name: 'Kuwaiti Dinar',
+          buyRate: 49000,
+          sellRate: 49100,
+          createdBy: 'system'
         }
       ];
       
