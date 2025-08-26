@@ -51,10 +51,43 @@ async function initializeData() {
     await fs.ensureDir(path.dirname(ADVICE_FILE));
     
     if (!await fs.pathExists(DATA_FILE)) {
-      await createDefaultCurrencies();
-    } else {
-      // Check if we need to add new currencies to existing data
-      await updateExistingCurrencies();
+      const defaultCurrencies = [
+        {
+          code: 'USD',
+          name: 'US Dollar',
+          buyRate: 15000,
+          sellRate: 15100,
+          lastUpdated: new Date().toISOString(),
+          lastPublished: null
+        },
+        {
+          code: 'EUR',
+          name: 'Euro',
+          buyRate: 16500,
+          sellRate: 16600,
+          lastUpdated: new Date().toISOString(),
+          lastPublished: null
+        },
+        {
+          code: 'GBP',
+          name: 'British Pound',
+          buyRate: 19000,
+          sellRate: 19100,
+          lastUpdated: new Date().toISOString(),
+          lastPublished: null
+        },
+        {
+          code: 'TRY',
+          name: 'Turkish Lira',
+          buyRate: 500,
+          sellRate: 510,
+          lastUpdated: new Date().toISOString(),
+          lastPublished: null
+        }
+      ];
+      
+      await fs.writeJson(DATA_FILE, defaultCurrencies, { spaces: 2 });
+      console.log('✅ Default currency data initialized');
     }
     
     if (!await fs.pathExists(SESSIONS_FILE)) {
@@ -70,114 +103,6 @@ async function initializeData() {
     
   } catch (error) {
     console.error('❌ Error initializing data:', error);
-  }
-}
-
-// Create default currencies
-async function createDefaultCurrencies() {
-  const defaultCurrencies = [
-    {
-      code: 'USD',
-      name: 'US Dollar',
-      buyRate: 15000,
-      sellRate: 15100,
-      lastUpdated: new Date().toISOString(),
-      lastPublished: null
-    },
-    {
-      code: 'EUR',
-      name: 'Euro',
-      buyRate: 16500,
-      sellRate: 16600,
-      lastUpdated: new Date().toISOString(),
-      lastPublished: null
-    },
-    {
-      code: 'GBP',
-      name: 'British Pound',
-      buyRate: 19000,
-      sellRate: 19100,
-      lastUpdated: new Date().toISOString(),
-      lastPublished: null
-    },
-    {
-      code: 'TRY',
-      name: 'Turkish Lira',
-      buyRate: 500,
-      sellRate: 510,
-      lastUpdated: new Date().toISOString(),
-      lastPublished: null
-    },
-    {
-      code: 'JPY',
-      name: 'Japanese Yen',
-      buyRate: 100,
-      sellRate: 101,
-      lastUpdated: new Date().toISOString(),
-      lastPublished: null
-    },
-    {
-      code: 'SAR',
-      name: 'Saudi Riyal',
-      buyRate: 4000,
-      sellRate: 4010,
-      lastUpdated: new Date().toISOString(),
-      lastPublished: null
-    },
-    {
-      code: 'JOD',
-      name: 'Jordanian Dinar',
-      buyRate: 21000,
-      sellRate: 21100,
-      lastUpdated: new Date().toISOString(),
-      lastPublished: null
-    },
-    {
-      code: 'KWD',
-      name: 'Kuwaiti Dinar',
-      buyRate: 49000,
-      sellRate: 49100,
-      lastUpdated: new Date().toISOString(),
-      lastPublished: null
-    }
-  ];
-  
-  await fs.writeJson(DATA_FILE, defaultCurrencies, { spaces: 2 });
-  console.log('✅ Default currency data initialized');
-}
-
-// Update existing currencies with new ones
-async function updateExistingCurrencies() {
-  try {
-    const existingData = await fs.readJson(DATA_FILE);
-    const existingCodes = existingData.map(c => c.code);
-    
-    const newCurrencies = [
-      { code: 'JPY', name: 'Japanese Yen', buyRate: 100, sellRate: 101 },
-      { code: 'SAR', name: 'Saudi Riyal', buyRate: 4000, sellRate: 4010 },
-      { code: 'JOD', name: 'Jordanian Dinar', buyRate: 21000, sellRate: 21100 },
-      { code: 'KWD', name: 'Kuwaiti Dinar', buyRate: 49000, sellRate: 49100 }
-    ];
-    
-    let updated = false;
-    newCurrencies.forEach(newCurrency => {
-      if (!existingCodes.includes(newCurrency.code)) {
-        existingData.push({
-          ...newCurrency,
-          lastUpdated: new Date().toISOString(),
-          lastPublished: null
-        });
-        updated = true;
-        console.log(`✅ Added new currency: ${newCurrency.code}`);
-      }
-    });
-    
-    if (updated) {
-      await fs.writeJson(DATA_FILE, existingData, { spaces: 2 });
-      console.log('✅ Currency data updated with new currencies');
-    }
-  } catch (error) {
-    console.error('Error updating currencies:', error);
   }
 }
 
@@ -295,28 +220,11 @@ io.on('connection', (socket) => {
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
-  res.json({
-    status: 'OK',
+  res.json({ 
+    status: 'OK', 
     timestamp: new Date().toISOString(),
     uptime: process.uptime()
   });
-});
-
-// Reset currencies data endpoint (for development/testing)
-app.post('/api/reset-currencies', async (req, res) => {
-  try {
-    await createDefaultCurrencies();
-    res.json({ 
-      message: 'Currencies reset successfully',
-      timestamp: new Date().toISOString()
-    });
-  } catch (error) {
-    console.error('Error resetting currencies:', error);
-    res.status(500).json({ 
-      error: 'Failed to reset currencies',
-      message: error.message
-    });
-  }
 });
 
 // Authentication Routes
@@ -839,15 +747,7 @@ function generateSocialMediaMessage(currencies, template = 'professional') {
       currencies.forEach(currency => {
         const buyRate = Number(currency.buyRate).toLocaleString('en-US');
         const sellRate = Number(currency.sellRate).toLocaleString('en-US');
-        const flag = currency.code === 'USD' ? '🇺🇸' : 
-                    currency.code === 'EUR' ? '🇪🇺' : 
-                    currency.code === 'GBP' ? '🇬🇧' : 
-                    currency.code === 'TRY' ? '🇹🇷' :
-                    currency.code === 'JPY' ? '🇯🇵' :
-                    currency.code === 'SAR' ? '🇸🇦' :
-                    currency.code === 'JOD' ? '🇯🇴' :
-                    currency.code === 'KWD' ? '🇰🇼' : '💱';
-        message += `${flag} ${currency.code}: Buy ${buyRate} | Sell ${sellRate} SYP\n`;
+        message += `${currency.code === 'USD' ? '🇺🇸' : currency.code === 'EUR' ? '🇪🇺' : currency.code === 'GBP' ? '🇬🇧' : '🇹🇷'} ${currency.code}: Buy ${buyRate} | Sell ${sellRate} SYP\n`;
       });
       message += `\n💸 Arnous Exchange - Your trusted partner!\n🚀 Best rates in town!`;
       break;
