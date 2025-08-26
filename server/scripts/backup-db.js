@@ -12,13 +12,9 @@ const path = require('path');
 
 // MongoDB connection options
 const mongoOptions = {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
   maxPoolSize: 10,
   serverSelectionTimeoutMS: 5000,
-  socketTimeoutMS: 45000,
-  bufferMaxEntries: 0,
-  bufferCommands: false
+  socketTimeoutMS: 45000
 };
 
 // Connect to MongoDB
