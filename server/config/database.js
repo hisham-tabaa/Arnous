@@ -31,7 +31,7 @@ const connectDB = async () => {
     
     const conn = await mongoose.connect(mongoURI, mongoOptions);
     
-    console.log(`MongoDB Connected: ${conn.connection.host}`);
+    console.log(`MongoDB Connected: ${conn.connection.host}/${conn.connection.name}`);
     
     // Initialize database with default data
     await initializeDatabase();
@@ -148,5 +148,10 @@ module.exports = {
   User,
   ActivityLog,
   Advice,
-  mongoose
+  mongoose,
+  getDbStatus: () => ({
+    readyState: mongoose.connection.readyState,
+    host: mongoose.connection.host,
+    name: mongoose.connection.name
+  })
 };

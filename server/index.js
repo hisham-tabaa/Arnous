@@ -7,7 +7,7 @@ const axios = require('axios');
 require('dotenv').config();
 
 // Import Database Configuration
-const { connectDB, Currency, User, ActivityLog, Advice } = require('./config/database');
+const { connectDB, Currency, User, ActivityLog, Advice, getDbStatus } = require('./config/database');
 
 // Import Services
 const AuthService = require('./services/authService');
@@ -115,10 +115,15 @@ io.on('connection', (socket) => {
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
+  const db = getDbStatus();
   res.json({ 
     status: 'OK', 
     timestamp: new Date().toISOString(),
-    database: 'connected',
+    database: {
+      readyState: db.readyState, // 1 means connected
+      host: db.host,
+      name: db.name
+    },
     environment: process.env.NODE_ENV || 'development'
   });
 });
