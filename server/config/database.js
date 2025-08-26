@@ -4,6 +4,15 @@ const User = require('../models/User');
 const ActivityLog = require('../models/ActivityLog');
 const Advice = require('../models/Advice');
 
+// Mask credentials in a MongoDB URI for safe logging
+function maskMongoURI(uri) {
+  try {
+    return String(uri).replace(/:\\S+@/, ':***@');
+  } catch (_) {
+    return '***';
+  }
+}
+
 // MongoDB connection options (compatible with modern MongoDB drivers)
 const mongoOptions = {
   maxPoolSize: 10,
@@ -23,6 +32,12 @@ const connectDB = async () => {
     
     if (!mongoURI) {
       throw new Error('MongoDB URI is not defined in environment variables');
+    }
+    
+    // Validate scheme early to provide clearer error messages
+    if (!/^mongodb(\+srv)?:\/\//.test(mongoURI)) {
+      console.error('Invalid MongoDB URI scheme. Received:', maskMongoURI(mongoURI));
+      throw new Error('Invalid MongoDB URI. Must start with "mongodb://" or "mongodb+srv://"');
     }
     
     const conn = await mongoose.connect(mongoURI, mongoOptions);
