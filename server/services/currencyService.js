@@ -270,7 +270,7 @@ class CurrencyService {
       errors.push(`${code}: Buy rate must be less than sell rate`);
     }
     
-    if (currencyData.code && !['USD', 'EUR', 'GBP', 'TRY'].includes(currencyData.code)) {
+    if (currencyData.code && !['USD', 'EUR', 'GBP', 'TRY', 'JPY', 'SAR', 'JOD', 'KWD'].includes(currencyData.code)) {
       errors.push(`${code}: Invalid currency code`);
     }
     

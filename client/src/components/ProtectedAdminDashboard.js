@@ -27,7 +27,11 @@ const ProtectedAdminDashboard = ({ onLogout }) => {
     USD: { buyRate: '', sellRate: '', lastUpdated: null },
     EUR: { buyRate: '', sellRate: '', lastUpdated: null },
     GBP: { buyRate: '', sellRate: '', lastUpdated: null },
-    TRY: { buyRate: '', sellRate: '', lastUpdated: null }
+    TRY: { buyRate: '', sellRate: '', lastUpdated: null },
+    JPY: { buyRate: '', sellRate: '', lastUpdated: null },
+    SAR: { buyRate: '', sellRate: '', lastUpdated: null },
+    JOD: { buyRate: '', sellRate: '', lastUpdated: null },
+    KWD: { buyRate: '', sellRate: '', lastUpdated: null }
   });
   
   const [loading, setLoading] = useState(false);
@@ -54,7 +58,11 @@ const ProtectedAdminDashboard = ({ onLogout }) => {
     USD: { name: 'US Dollar', icon: DollarSign, flag: '🇺🇸' },
     EUR: { name: 'Euro', icon: Euro, flag: '🇪🇺' },
     GBP: { name: 'British Pound', icon: PoundSterling, flag: '🇬🇧' },
-    TRY: { name: 'Turkish Lira', icon: Banknote, flag: '🇹🇷' }
+    TRY: { name: 'Turkish Lira', icon: Banknote, flag: '🇹🇷' },
+    JPY: { name: 'Japanese Yen', icon: Banknote, flag: '🇯🇵' },
+    SAR: { name: 'Saudi Riyal', icon: Banknote, flag: '🇸🇦' },
+    JOD: { name: 'Jordanian Dinar', icon: Banknote, flag: '🇯🇴' },
+    KWD: { name: 'Kuwaiti Dinar', icon: Banknote, flag: '🇰🇼' }
   };
 
   const socialPlatforms = [

@@ -7,7 +7,7 @@ const CurrencySchema = new mongoose.Schema({
     unique: true,
     uppercase: true,
     trim: true,
-    enum: ['USD', 'EUR', 'GBP', 'TRY']
+    enum: ['USD', 'EUR', 'GBP', 'TRY', 'JPY', 'SAR', 'JOD', 'KWD']
   },
   name: {
     type: String,
@@ -107,15 +107,33 @@ CurrencySchema.statics.getByCode = function(code) {
 // Static method to update multiple currencies
 CurrencySchema.statics.updateMultiple = async function(currencyUpdates, adminUser) {
   const updates = [];
+
+  const currencyNames = {
+    USD: 'US Dollar',
+    EUR: 'Euro',
+    GBP: 'British Pound',
+    TRY: 'Turkish Lira',
+    JPY: 'Japanese Yen',
+    SAR: 'Saudi Riyal',
+    JOD: 'Jordanian Dinar',
+    KWD: 'Kuwaiti Dinar'
+  };
   
-  for (const [code, rates] of Object.entries(currencyUpdates)) {
+  for (const [codeRaw, rates] of Object.entries(currencyUpdates)) {
+    const code = codeRaw.toUpperCase();
     const update = await this.findOneAndUpdate(
-      { code: code.toUpperCase() },
+      { code },
       {
-        buyRate: rates.buyRate,
-        sellRate: rates.sellRate,
-        lastUpdated: new Date(),
-        createdBy: adminUser
+        $set: {
+          buyRate: rates.buyRate,
+          sellRate: rates.sellRate,
+          lastUpdated: new Date(),
+          createdBy: adminUser
+        },
+        $setOnInsert: {
+          code,
+          name: currencyNames[code] || code
+        }
       },
       { 
         upsert: true, 

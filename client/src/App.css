@@ -544,3 +544,40 @@ body {
     justify-content: center;
   }
 }
+
+/* Extra small devices */
+@media (max-width: 380px) {
+  .container {
+    padding: 10px;
+  }
+  .card {
+    padding: 16px;
+    border-radius: 14px;
+  }
+  .main-title {
+    font-size: 1.6rem;
+  }
+  .currency-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  .currency-item {
+    padding: 16px;
+  }
+  .currency-label {
+    gap: 8px;
+  }
+  .currency-name {
+    font-size: 1rem;
+  }
+  .rate-item {
+    padding: 10px;
+  }
+  .rate-value {
+    font-size: 1.2rem;
+  }
+  .btn {
+    padding: 10px 16px;
+    font-size: 0.95rem;
+  }
+}
