@@ -276,22 +276,42 @@ const UserPage = () => {
     );
   }
 
+  // Add CSS for animations
+  const style = document.createElement('style');
+  style.textContent = `
+    @keyframes pulse {
+      0%, 100% { opacity: 0.3; transform: scale(1); }
+      50% { opacity: 0.6; transform: scale(1.05); }
+    }
+    
+    @keyframes glow {
+      0%, 100% { box-shadow: 0 8px 32px rgba(255, 215, 0, 0.4), 0 0 20px rgba(255, 215, 0, 0.3); }
+      50% { box-shadow: 0 12px 40px rgba(255, 215, 0, 0.6), 0 0 30px rgba(255, 215, 0, 0.5); }
+    }
+  `;
+  document.head.appendChild(style);
+
   return (
-    <div className="container">
+    <div className="container" style={{
+      padding: window.innerWidth <= 768 ? '16px' : '24px',
+      maxWidth: '100%'
+    }}>
       {notification && (
         <div style={{
           position: 'fixed',
           top: '20px',
-          right: '20px',
+          right: window.innerWidth <= 768 ? '10px' : '20px',
+          left: window.innerWidth <= 768 ? '10px' : 'auto',
           background: notification.type === 'success' ? '#10b981' : '#ef4444',
           color: 'white',
-          padding: '12px 20px',
+          padding: window.innerWidth <= 768 ? '10px 16px' : '12px 20px',
           borderRadius: '8px',
           zIndex: 1000,
           boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
           display: 'flex',
           alignItems: 'center',
-          gap: '8px'
+          gap: '8px',
+          fontSize: window.innerWidth <= 768 ? '0.9rem' : '1rem'
         }}>
           {notification.type === 'success' ? '✅' : '❌'}
           {notification.text}
@@ -300,9 +320,9 @@ const UserPage = () => {
       <div className="card">
         <div className="header" style={{
           background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-          borderRadius: '20px',
-          padding: '32px',
-          marginBottom: '30px',
+          borderRadius: window.innerWidth <= 768 ? '16px' : '20px',
+          padding: window.innerWidth <= 768 ? '20px' : '32px',
+          marginBottom: window.innerWidth <= 768 ? '20px' : '30px',
           color: 'white',
           textAlign: 'center',
           position: 'relative',
@@ -320,27 +340,47 @@ const UserPage = () => {
           }} />
           
           <div style={{ position: 'relative', zIndex: 1 }}>
-            <div className="logo-section" style={{ marginBottom: '24px' }}>
-              <div className="logo-container" style={{ marginBottom: '16px' }}>
+            <div className="logo-section" style={{ marginBottom: window.innerWidth <= 768 ? '16px' : '24px' }}>
+              <div className="logo-container" style={{ 
+                marginBottom: window.innerWidth <= 768 ? '12px' : '16px',
+                position: 'relative'
+              }}>
                 <img src={Logo} alt="Arnous Logo" className="main-logo" style={{ 
-                  width: '80px', 
-                  height: '80px', 
+                  width: window.innerWidth <= 768 ? '100px' : '120px', 
+                  height: window.innerWidth <= 768 ? '100px' : '120px', 
                   borderRadius: '50%',
-                  border: '3px solid rgba(255, 255, 255, 0.3)',
-                  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
+                  border: '4px solid rgba(255, 215, 0, 0.8)',
+                  boxShadow: '0 8px 32px rgba(255, 215, 0, 0.4), 0 0 20px rgba(255, 215, 0, 0.3)',
+                  filter: 'brightness(1.3) saturate(1.4) hue-rotate(10deg)',
+                  transition: 'all 0.3s ease',
+                  animation: 'glow 3s ease-in-out infinite'
                 }} />
-            </div>
-            <div className="title-section">
+                {/* Golden glow effect */}
+                <div style={{
+                  position: 'absolute',
+                  top: '50%',
+                  left: '50%',
+                  transform: 'translate(-50%, -50%)',
+                  width: window.innerWidth <= 768 ? '130px' : '150px',
+                  height: window.innerWidth <= 768 ? '130px' : '150px',
+                  background: 'radial-gradient(circle, rgba(255, 215, 0, 0.3) 0%, transparent 70%)',
+                  borderRadius: '50%',
+                  animation: 'pulse 2s infinite',
+                  zIndex: -1
+                }}></div>
+              </div>
+              <div className="title-section">
                 <h1 className="main-title" style={{ 
-                  fontSize: '2.5rem', 
+                  fontSize: window.innerWidth <= 768 ? '1.8rem' : '2.5rem', 
                   fontWeight: '800', 
                   margin: '0 0 16px 0',
-                  textShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
+                  textShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+                  padding: window.innerWidth <= 768 ? '0 8px' : '0'
                 }}>
                   💱 أسعار الصرف اليوم
                 </h1>
                 <div style={{
-                  width: '80px',
+                  width: window.innerWidth <= 768 ? '60px' : '80px',
                   height: '4px',
                   background: 'linear-gradient(90deg, #fbbf24 0%, #f59e0b 100%)',
                   margin: '0 auto',
@@ -350,10 +390,11 @@ const UserPage = () => {
             </div>
             
             <p className="subtitle" style={{ 
-              fontSize: '1.2rem', 
+              fontSize: window.innerWidth <= 768 ? '1rem' : '1.2rem', 
               margin: '0 0 24px 0',
               opacity: 0.9,
-              fontWeight: '500'
+              fontWeight: '500',
+              padding: window.innerWidth <= 768 ? '0 16px' : '0'
             }}>
               أحدث أسعار صرف العملات مقابل الليرة السورية
             </p>
@@ -362,19 +403,21 @@ const UserPage = () => {
               display: 'flex',
               justifyContent: 'center',
               alignItems: 'center',
-              gap: '16px',
+              gap: window.innerWidth <= 768 ? '12px' : '16px',
               marginBottom: '20px',
-              flexWrap: 'wrap'
+              flexWrap: 'wrap',
+              flexDirection: window.innerWidth <= 480 ? 'column' : 'row'
             }}>
               <div style={{
                 display: 'flex',
                 alignItems: 'center',
                 gap: '8px',
                 background: 'rgba(255, 255, 255, 0.2)',
-                padding: '12px 20px',
+                padding: window.innerWidth <= 768 ? '10px 16px' : '12px 20px',
                 borderRadius: '25px',
                 backdropFilter: 'blur(10px)',
-                border: '1px solid rgba(255, 255, 255, 0.3)'
+                border: '1px solid rgba(255, 255, 255, 0.3)',
+                fontSize: window.innerWidth <= 768 ? '0.85rem' : '1rem'
               }}>
                 <div style={{ 
                   width: '12px', 
@@ -384,39 +427,41 @@ const UserPage = () => {
                   boxShadow: connected ? '0 0 8px #10b981' : '0 0 8px #ef4444'
                 }}></div>
                 <span style={{ fontWeight: '600' }}>
-            {connected ? 'متصل - تحديث فوري' : 'غير متصل'}
+                  {connected ? 'متصل - تحديث فوري' : 'غير متصل'}
                 </span>
-          </div>
+              </div>
               
-          {lastUpdate && (
+              {lastUpdate && (
                 <div style={{
                   display: 'flex',
                   alignItems: 'center',
                   gap: '8px',
                   background: 'rgba(255, 255, 255, 0.2)',
-                  padding: '12px 20px',
+                  padding: window.innerWidth <= 768 ? '10px 16px' : '12px 20px',
                   borderRadius: '25px',
                   backdropFilter: 'blur(10px)',
-                  border: '1px solid rgba(255, 255, 255, 0.3)'
+                  border: '1px solid rgba(255, 255, 255, 0.3)',
+                  fontSize: window.innerWidth <= 768 ? '0.85rem' : '1rem'
                 }}>
-                  <Clock size={18} />
+                  <Clock size={window.innerWidth <= 768 ? 16 : 18} />
                   <span style={{ fontWeight: '600' }}>
-              آخر تحديث: {formatDate(lastUpdate)}
+                    آخر تحديث: {formatDate(lastUpdate)}
                   </span>
+                </div>
+              )}
             </div>
-          )}
-        </div>
 
             {/* Currency count badge */}
             <div style={{
               display: 'inline-block',
               background: 'rgba(255, 255, 255, 0.2)',
-              padding: '8px 16px',
+              padding: window.innerWidth <= 768 ? '6px 12px' : '8px 16px',
               borderRadius: '20px',
-              fontSize: '0.9rem',
+              fontSize: window.innerWidth <= 768 ? '0.8rem' : '0.9rem',
               fontWeight: '600',
               backdropFilter: 'blur(10px)',
-              border: '1px solid rgba(255, 255, 255, 0.3)'
+              border: '1px solid rgba(255, 255, 255, 0.3)',
+              marginBottom: window.innerWidth <= 768 ? '8px' : '0'
             }}>
               📊 {Object.keys(currencies).length} عملة متاحة
             </div>
@@ -445,14 +490,15 @@ const UserPage = () => {
                 background: 'rgba(255, 255, 255, 0.2)',
                 border: '1px solid rgba(255, 255, 255, 0.3)',
                 color: 'white',
-                padding: '8px 16px',
+                padding: window.innerWidth <= 768 ? '6px 12px' : '8px 16px',
                 borderRadius: '20px',
-                fontSize: '0.9rem',
+                fontSize: window.innerWidth <= 768 ? '0.8rem' : '0.9rem',
                 fontWeight: '600',
                 cursor: 'pointer',
                 backdropFilter: 'blur(10px)',
                 transition: 'all 0.3s ease',
-                marginTop: '10px'
+                marginTop: '10px',
+                width: window.innerWidth <= 480 ? '100%' : 'auto'
               }}
               onMouseEnter={(e) => {
                 e.target.style.background = 'rgba(255, 255, 255, 0.3)';
@@ -466,12 +512,13 @@ const UserPage = () => {
           </div>
         </div>
 
-        <div className="currency-grid" style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))',
-          gap: '24px',
-          marginTop: '30px'
-        }}>
+                  <div className="currency-grid" style={{
+            display: 'grid',
+            gridTemplateColumns: window.innerWidth <= 768 ? '1fr' : 'repeat(auto-fit, minmax(350px, 1fr))',
+            gap: window.innerWidth <= 768 ? '16px' : '24px',
+            marginTop: window.innerWidth <= 768 ? '20px' : '30px',
+            padding: window.innerWidth <= 768 ? '0 8px' : '0'
+          }}>
           {Object.keys(currencies).map(currency => {
             const info = currencyInfo[currency];
             const data = currencies[currency];
@@ -486,8 +533,8 @@ const UserPage = () => {
                   background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
                   boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
                   border: '1px solid #e2e8f0',
-                  borderRadius: '16px',
-                  padding: '24px',
+                  borderRadius: window.innerWidth <= 768 ? '12px' : '16px',
+                  padding: window.innerWidth <= 768 ? '16px' : '24px',
                   transition: 'all 0.3s ease',
                   position: 'relative',
                   overflow: 'hidden'
@@ -512,13 +559,24 @@ const UserPage = () => {
                   borderRadius: '16px 16px 0 0'
                 }} />
                 
-                <div className="currency-label" style={{ marginBottom: '20px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
-                    <span className="currency-flag" style={{ fontSize: '2rem' }}>{info.flag}</span>
-                    <Icon size={28} style={{ color: info.color }} />
-                  <div>
+                <div className="currency-label" style={{ 
+                  marginBottom: window.innerWidth <= 768 ? '16px' : '20px' 
+                }}>
+                  <div style={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    gap: window.innerWidth <= 768 ? '8px' : '12px', 
+                    marginBottom: '8px',
+                    flexDirection: window.innerWidth <= 480 ? 'column' : 'row',
+                    textAlign: window.innerWidth <= 480 ? 'center' : 'left'
+                  }}>
+                    <span className="currency-flag" style={{ 
+                      fontSize: window.innerWidth <= 768 ? '1.5rem' : '2rem' 
+                    }}>{info.flag}</span>
+                    <Icon size={window.innerWidth <= 768 ? 24 : 28} style={{ color: info.color }} />
+                    <div>
                       <div className="currency-name" style={{ 
-                        fontSize: '1.25rem', 
+                        fontSize: window.innerWidth <= 768 ? '1.1rem' : '1.25rem', 
                         fontWeight: '700', 
                         color: '#1e293b',
                         marginBottom: '4px'
@@ -526,11 +584,11 @@ const UserPage = () => {
                         {info.name}
                       </div>
                       <div style={{ 
-                        fontSize: '0.9rem', 
+                        fontSize: window.innerWidth <= 768 ? '0.8rem' : '0.9rem', 
                         color: '#64748b',
                         fontWeight: '500'
                       }}>
-                      {info.description}
+                        {info.description}
                       </div>
                     </div>
                   </div>
@@ -540,23 +598,29 @@ const UserPage = () => {
                     display: 'inline-block',
                     background: `linear-gradient(135deg, ${info.color} 0%, ${info.color}80 100%)`,
                     color: 'white',
-                    padding: '6px 12px',
+                    padding: window.innerWidth <= 768 ? '4px 8px' : '6px 12px',
                     borderRadius: '20px',
-                    fontSize: '0.85rem',
+                    fontSize: window.innerWidth <= 768 ? '0.75rem' : '0.85rem',
                     fontWeight: '600',
                     textAlign: 'center',
-                    minWidth: '60px'
+                    minWidth: window.innerWidth <= 768 ? '50px' : '60px',
+                    marginBottom: window.innerWidth <= 480 ? '8px' : '0'
                   }}>
                     {currency}
                   </div>
                 </div>
                 
-                <div className="currency-rates" style={{ marginBottom: '20px' }}>
+                <div className="currency-rates" style={{ 
+                  marginBottom: window.innerWidth <= 768 ? '16px' : '20px',
+                  display: 'grid',
+                  gridTemplateColumns: window.innerWidth <= 480 ? '1fr' : '1fr 1fr',
+                  gap: window.innerWidth <= 480 ? '12px' : '16px'
+                }}>
                   <div className="rate-item" style={{ 
                     background: 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)',
-                    padding: '16px',
+                    padding: window.innerWidth <= 768 ? '12px' : '16px',
                     borderRadius: '12px',
-                    marginBottom: '12px',
+                    marginBottom: window.innerWidth <= 480 ? '0' : '12px',
                     border: '1px solid #bbf7d0'
                   }}>
                     <div style={{ 
@@ -564,24 +628,31 @@ const UserPage = () => {
                       alignItems: 'center', 
                       gap: '8px', 
                       color: '#16a34a',
-                      marginBottom: '8px'
+                      marginBottom: '8px',
+                      justifyContent: window.innerWidth <= 480 ? 'center' : 'flex-start'
                     }}>
-                      <TrendingUp size={18} />
-                      <span style={{ fontWeight: '600', fontSize: '0.95rem' }}>سعر الشراء</span>
+                      <TrendingUp size={window.innerWidth <= 768 ? 16 : 18} />
+                      <span style={{ 
+                        fontWeight: '600', 
+                        fontSize: window.innerWidth <= 768 ? '0.85rem' : '0.95rem' 
+                      }}>سعر الشراء</span>
                     </div>
                     <div className="rate-value" style={{
-                      fontSize: '1.5rem',
+                      fontSize: window.innerWidth <= 768 ? '1.2rem' : '1.5rem',
                       fontWeight: '700',
                       color: '#15803d',
                       textAlign: 'center'
                     }}>
-                      {formatNumber(data.buyRate)} <span style={{ fontSize: '1.1rem', color: '#16a34a' }}>ل.س</span>
+                      {formatNumber(data.buyRate)} <span style={{ 
+                        fontSize: window.innerWidth <= 768 ? '0.9rem' : '1.1rem', 
+                        color: '#16a34a' 
+                      }}>ل.س</span>
                     </div>
                   </div>
                   
                   <div className="rate-item" style={{ 
                     background: 'linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%)',
-                    padding: '16px',
+                    padding: window.innerWidth <= 768 ? '12px' : '16px',
                     borderRadius: '12px',
                     border: '1px solid #fecaca'
                   }}>
@@ -590,18 +661,25 @@ const UserPage = () => {
                       alignItems: 'center', 
                       gap: '8px', 
                       color: '#dc2626',
-                      marginBottom: '8px'
+                      marginBottom: '8px',
+                      justifyContent: window.innerWidth <= 480 ? 'center' : 'flex-start'
                     }}>
-                      <TrendingDown size={18} />
-                      <span style={{ fontWeight: '600', fontSize: '0.95rem' }}>سعر البيع</span>
+                      <TrendingDown size={window.innerWidth <= 768 ? 16 : 18} />
+                      <span style={{ 
+                        fontWeight: '600', 
+                        fontSize: window.innerWidth <= 768 ? '0.85rem' : '0.95rem' 
+                      }}>سعر البيع</span>
                     </div>
                     <div className="rate-value" style={{
-                      fontSize: '1.5rem',
+                      fontSize: window.innerWidth <= 768 ? '1.2rem' : '1.5rem',
                       fontWeight: '700',
                       color: '#b91c1c',
                       textAlign: 'center'
                     }}>
-                      {formatNumber(data.sellRate)} <span style={{ fontSize: '1.1rem', color: '#dc2626' }}>ل.س</span>
+                      {formatNumber(data.sellRate)} <span style={{ 
+                        fontSize: window.innerWidth <= 768 ? '0.9rem' : '1.1rem', 
+                        color: '#dc2626' 
+                      }}>ل.س</span>
                     </div>
                   </div>
                 </div>
@@ -609,7 +687,7 @@ const UserPage = () => {
                 {/* Spread information */}
                 <div style={{
                   background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
-                  padding: '12px 16px',
+                  padding: window.innerWidth <= 768 ? '10px 12px' : '12px 16px',
                   borderRadius: '10px',
                   marginBottom: '16px',
                   border: '1px solid #cbd5e1'
@@ -618,14 +696,16 @@ const UserPage = () => {
                     display: 'flex', 
                     justifyContent: 'space-between', 
                     alignItems: 'center',
-                    fontSize: '0.9rem'
+                    fontSize: window.innerWidth <= 768 ? '0.8rem' : '0.9rem',
+                    flexDirection: window.innerWidth <= 480 ? 'column' : 'row',
+                    gap: window.innerWidth <= 480 ? '8px' : '0'
                   }}>
                     <span style={{ color: '#475569', fontWeight: '500' }}>الفرق:</span>
                     <span style={{ 
                       color: '#1e293b', 
                       fontWeight: '600',
                       background: 'white',
-                      padding: '4px 8px',
+                      padding: window.innerWidth <= 768 ? '3px 6px' : '4px 8px',
                       borderRadius: '6px',
                       border: '1px solid #e2e8f0'
                     }}>
@@ -638,15 +718,17 @@ const UserPage = () => {
                   display: 'flex',
                   alignItems: 'center',
                   gap: '8px',
-                  fontSize: '0.85rem',
+                  fontSize: window.innerWidth <= 768 ? '0.75rem' : '0.85rem',
                   color: '#64748b',
                   justifyContent: 'center',
-                  padding: '12px',
+                  padding: window.innerWidth <= 768 ? '10px' : '12px',
                   background: 'white',
                   borderRadius: '8px',
-                  border: '1px solid #e2e8f0'
+                  border: '1px solid #e2e8f0',
+                  flexDirection: window.innerWidth <= 480 ? 'column' : 'row',
+                  textAlign: 'center'
                 }}>
-                  <Clock size={14} />
+                  <Clock size={window.innerWidth <= 768 ? 12 : 14} />
                   آخر تحديث: {formatDate(data.lastUpdated)}
                 </div>
               </div>
@@ -656,17 +738,17 @@ const UserPage = () => {
 
         {/* Currency Summary Section */}
         <div className="card" style={{ 
-          marginTop: '30px',
+          marginTop: window.innerWidth <= 768 ? '20px' : '30px',
           background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
-          borderRadius: '20px',
-          padding: '24px',
+          borderRadius: window.innerWidth <= 768 ? '16px' : '20px',
+          padding: window.innerWidth <= 768 ? '20px' : '24px',
           border: '1px solid #cbd5e1'
         }}>
           <h3 style={{ 
             color: '#1e293b', 
             marginBottom: '20px', 
             textAlign: 'center',
-            fontSize: '1.5rem',
+            fontSize: window.innerWidth <= 768 ? '1.3rem' : '1.5rem',
             fontWeight: '700'
           }}>
             📊 ملخص العملات
@@ -674,80 +756,80 @@ const UserPage = () => {
           
           <div style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-            gap: '20px',
+            gridTemplateColumns: window.innerWidth <= 768 ? '1fr' : 'repeat(auto-fit, minmax(200px, 1fr))',
+            gap: window.innerWidth <= 768 ? '16px' : '20px',
             marginBottom: '20px'
           }}>
             <div style={{
               background: 'white',
-              padding: '20px',
-              borderRadius: '16px',
+              padding: window.innerWidth <= 768 ? '16px' : '20px',
+              borderRadius: window.innerWidth <= 768 ? '12px' : '16px',
               textAlign: 'center',
               border: '1px solid #e2e8f0',
               boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)'
             }}>
-              <div style={{ fontSize: '2rem', marginBottom: '8px' }}>💱</div>
-              <div style={{ fontSize: '1.5rem', fontWeight: '700', color: '#1e293b', marginBottom: '4px' }}>
+              <div style={{ fontSize: window.innerWidth <= 768 ? '1.5rem' : '2rem', marginBottom: '8px' }}>💱</div>
+              <div style={{ fontSize: window.innerWidth <= 768 ? '1.2rem' : '1.5rem', fontWeight: '700', color: '#1e293b', marginBottom: '4px' }}>
                 {Object.keys(currencies).length}
               </div>
-              <div style={{ color: '#64748b', fontSize: '0.9rem' }}>عملة متاحة</div>
+              <div style={{ color: '#64748b', fontSize: window.innerWidth <= 768 ? '0.8rem' : '0.9rem' }}>عملة متاحة</div>
             </div>
             
             <div style={{
               background: 'white',
-              padding: '20px',
-              borderRadius: '16px',
+              padding: window.innerWidth <= 768 ? '16px' : '20px',
+              borderRadius: window.innerWidth <= 768 ? '12px' : '16px',
               textAlign: 'center',
               border: '1px solid #e2e8f0',
               boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)'
             }}>
-              <div style={{ fontSize: '2rem', marginBottom: '8px' }}>🔄</div>
-              <div style={{ fontSize: '1.5rem', fontWeight: '700', color: '#1e293b', marginBottom: '4px' }}>
+              <div style={{ fontSize: window.innerWidth <= 768 ? '1.5rem' : '2rem', marginBottom: '8px' }}>🔄</div>
+              <div style={{ fontSize: window.innerWidth <= 768 ? '1.2rem' : '1.5rem', fontWeight: '700', color: '#1e293b', marginBottom: '4px' }}>
                 {lastUpdate ? formatDate(lastUpdate).split(' ')[0] : 'N/A'}
               </div>
-              <div style={{ color: '#64748b', fontSize: '0.9rem' }}>آخر تحديث</div>
+              <div style={{ color: '#64748b', fontSize: window.innerWidth <= 768 ? '0.8rem' : '0.9rem' }}>آخر تحديث</div>
             </div>
             
             <div style={{
               background: 'white',
-              padding: '20px',
-              borderRadius: '16px',
+              padding: window.innerWidth <= 768 ? '16px' : '20px',
+              borderRadius: window.innerWidth <= 768 ? '12px' : '16px',
               textAlign: 'center',
               border: '1px solid #e2e8f0',
               boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)'
             }}>
-              <div style={{ fontSize: '2rem', marginBottom: '8px' }}>📡</div>
+              <div style={{ fontSize: window.innerWidth <= 768 ? '1.5rem' : '2rem', marginBottom: '8px' }}>📡</div>
               <div style={{ 
-                fontSize: '1.5rem', 
+                fontSize: window.innerWidth <= 768 ? '1.2rem' : '1.5rem', 
                 fontWeight: '700', 
                 color: connected ? '#10b981' : '#ef4444',
                 marginBottom: '4px'
               }}>
                 {connected ? 'متصل' : 'غير متصل'}
               </div>
-              <div style={{ color: '#64748b', fontSize: '0.9rem' }}>حالة الاتصال</div>
+              <div style={{ color: '#64748b', fontSize: window.innerWidth <= 768 ? '0.8rem' : '0.9rem' }}>حالة الاتصال</div>
             </div>
             
             <div style={{
               background: 'white',
-              padding: '20px',
-              borderRadius: '16px',
+              padding: window.innerWidth <= 768 ? '16px' : '20px',
+              borderRadius: window.innerWidth <= 768 ? '12px' : '16px',
               textAlign: 'center',
               border: '1px solid #e2e8f0',
               boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)'
             }}>
-              <div style={{ fontSize: '2rem', marginBottom: '8px' }}>⏰</div>
-              <div style={{ fontSize: '1.5rem', fontWeight: '700', color: '#1e293b', marginBottom: '4px' }}>
+              <div style={{ fontSize: window.innerWidth <= 768 ? '1.5rem' : '2rem', marginBottom: '8px' }}>⏰</div>
+              <div style={{ fontSize: window.innerWidth <= 768 ? '1.2rem' : '1.5rem', fontWeight: '700', color: '#1e293b', marginBottom: '4px' }}>
                 30 ث
               </div>
-              <div style={{ color: '#64748b', fontSize: '0.9rem' }}>معدل التحديث</div>
+              <div style={{ color: '#64748b', fontSize: window.innerWidth <= 768 ? '0.8rem' : '0.9rem' }}>معدل التحديث</div>
             </div>
           </div>
           
           <div style={{
             background: 'white',
-            padding: '20px',
-            borderRadius: '16px',
+            padding: window.innerWidth <= 768 ? '16px' : '20px',
+            borderRadius: window.innerWidth <= 768 ? '12px' : '16px',
             border: '1px solid #e2e8f0',
             boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)'
           }}>
@@ -755,7 +837,7 @@ const UserPage = () => {
               color: '#1e293b', 
               marginBottom: '16px', 
               textAlign: 'center',
-              fontSize: '1.2rem',
+              fontSize: window.innerWidth <= 768 ? '1.1rem' : '1.2rem',
               fontWeight: '600'
             }}>
               🎯 العملات المتاحة
@@ -928,16 +1010,25 @@ const UserPage = () => {
         </div>
 
         {/* Advice and Predictions Section */}
-        <div className="card" style={{ marginTop: '30px' }}>
-          <h3 style={{ color: '#2d3748', marginBottom: '20px', textAlign: 'center' }}>
+        <div className="card" style={{ 
+          marginTop: window.innerWidth <= 768 ? '20px' : '30px',
+          padding: window.innerWidth <= 768 ? '20px' : '30px'
+        }}>
+          <h3 style={{ 
+            color: '#2d3748', 
+            marginBottom: '20px', 
+            textAlign: 'center',
+            fontSize: window.innerWidth <= 768 ? '1.4rem' : '1.6rem'
+          }}>
             🔮 توقعات وتحليلات أرنوس
           </h3>
           <p style={{ 
             color: '#718096', 
             textAlign: 'center', 
             marginBottom: '25px',
-            fontSize: '1.1rem',
-            lineHeight: '1.6'
+            fontSize: window.innerWidth <= 768 ? '1rem' : '1.1rem',
+            lineHeight: '1.6',
+            padding: window.innerWidth <= 768 ? '0 8px' : '0'
           }}>
             آراء وتوقعات خبراء أرنوس حول أسواق العملات والاقتصاد المحلي والعالمي
           </p>
@@ -1055,9 +1146,22 @@ const UserPage = () => {
         </div>
 
         {/* Additional Information */}
-        <div className="card" style={{ marginTop: '30px', textAlign: 'center' }}>
-          <h3 style={{ color: '#2d3748', marginBottom: '15px' }}>معلومات إضافية</h3>
-          <p style={{ color: '#718096', lineHeight: '1.6' }}>
+        <div className="card" style={{ 
+          marginTop: window.innerWidth <= 768 ? '20px' : '30px', 
+          textAlign: 'center',
+          padding: window.innerWidth <= 768 ? '20px' : '30px'
+        }}>
+          <h3 style={{ 
+            color: '#2d3748', 
+            marginBottom: '15px',
+            fontSize: window.innerWidth <= 768 ? '1.3rem' : '1.5rem'
+          }}>معلومات إضافية</h3>
+          <p style={{ 
+            color: '#718096', 
+            lineHeight: '1.6',
+            fontSize: window.innerWidth <= 768 ? '0.9rem' : '1rem',
+            padding: window.innerWidth <= 768 ? '0 8px' : '0'
+          }}>
             تُحدث أسعار الصرف بشكل دوري من قبل الإدارة. الأسعار المعروضة هي أسعار استرشادية وقد تختلف قليلاً عن أسعار السوق الفعلية.
           </p>
           <button 
@@ -1068,9 +1172,9 @@ const UserPage = () => {
               background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
               border: 'none',
               color: 'white',
-              padding: '16px 32px',
+              padding: window.innerWidth <= 768 ? '12px 24px' : '16px 32px',
               borderRadius: '12px',
-              fontSize: '1.1rem',
+              fontSize: window.innerWidth <= 768 ? '1rem' : '1.1rem',
               fontWeight: '600',
               cursor: 'pointer',
               transition: 'all 0.3s ease',
@@ -1078,7 +1182,8 @@ const UserPage = () => {
               alignItems: 'center',
               gap: '12px',
               margin: '20px auto 0',
-              boxShadow: '0 4px 6px -1px rgba(59, 130, 246, 0.3)'
+              boxShadow: '0 4px 6px -1px rgba(59, 130, 246, 0.3)',
+              width: window.innerWidth <= 480 ? '100%' : 'auto'
             }}
             onMouseEnter={(e) => {
               e.target.style.transform = 'translateY(-2px)';
@@ -1089,7 +1194,7 @@ const UserPage = () => {
               e.target.style.boxShadow = '0 4px 6px -1px rgba(59, 130, 246, 0.3)';
             }}
           >
-            <RefreshCw size={20} />
+            <RefreshCw size={window.innerWidth <= 768 ? 18 : 20} />
             تحديث الأسعار
           </button>
         </div>
