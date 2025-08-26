@@ -144,30 +144,10 @@ const UserPage = () => {
         // Convert array to object format for easier rendering
         const currenciesArray = response.data.currencies;
         const currenciesObject = {};
-        
-        // First, add all currencies from currencyInfo with default rates if they don't exist
-        Object.keys(currencyInfo).forEach(code => {
-          const existingCurrency = currenciesArray.find(c => c.code === code);
-          if (existingCurrency) {
-            currenciesObject[code] = existingCurrency;
-            console.log(`✅ Found existing currency: ${code} - ${existingCurrency.name}`);
-          } else {
-            // Add default currency with placeholder rates
-            currenciesObject[code] = {
-              code: code,
-              name: currencyInfo[code].name,
-              buyRate: 0,
-              sellRate: 0,
-              spread: 0,
-              spreadPercentage: '0.00',
-              lastUpdated: new Date().toISOString(),
-              isActive: true
-            };
-            console.log(`⚠️ Added default currency: ${code} - ${currencyInfo[code].name} (no rates yet)`);
-          }
+        currenciesArray.forEach(currency => {
+          currenciesObject[currency.code] = currency;
         });
         
-        console.log('📊 Final currencies object:', currenciesObject);
         setCurrencies(currenciesObject);
         setLastUpdate(new Date().toISOString());
         setLoading(false);
@@ -218,27 +198,9 @@ const UserPage = () => {
         } else if (Array.isArray(updatedCurrencies)) {
           // Array of currencies received - convert to object format
           const currenciesObject = {};
-          
-          // First, add all currencies from currencyInfo with default rates if they don't exist
-          Object.keys(currencyInfo).forEach(code => {
-            const existingCurrency = updatedCurrencies.find(c => c.code === code);
-            if (existingCurrency) {
-              currenciesObject[code] = existingCurrency;
-            } else {
-              // Add default currency with placeholder rates
-              currenciesObject[code] = {
-                code: code,
-                name: currencyInfo[code].name,
-                buyRate: 0,
-                sellRate: 0,
-                spread: 0,
-                spreadPercentage: '0.00',
-                lastUpdated: new Date().toISOString(),
-                isActive: true
-              };
-            }
+          updatedCurrencies.forEach(currency => {
+            currenciesObject[currency.code] = currency;
           });
-          
           setCurrencies(currenciesObject);
           setLastUpdate(new Date().toISOString());
         } else {
@@ -418,8 +380,8 @@ const UserPage = () => {
                   animation: 'pulse 2s infinite',
                   zIndex: -1
                 }}></div>
-              </div>
-              <div className="title-section">
+            </div>
+            <div className="title-section">
                 <h1 className="main-title" style={{ 
                   fontSize: window.innerWidth <= 768 ? '1.8rem' : '2.5rem', 
                   fontWeight: '800', 
@@ -436,8 +398,8 @@ const UserPage = () => {
                   margin: '0 auto',
                   borderRadius: '2px'
                 }}></div>
-              </div>
             </div>
+          </div>
             
             <p className="subtitle" style={{ 
               fontSize: window.innerWidth <= 768 ? '1rem' : '1.2rem', 
@@ -477,11 +439,11 @@ const UserPage = () => {
                   boxShadow: connected ? '0 0 8px #10b981' : '0 0 8px #ef4444'
                 }}></div>
                 <span style={{ fontWeight: '600' }}>
-                  {connected ? 'متصل - تحديث فوري' : 'غير متصل'}
+            {connected ? 'متصل - تحديث فوري' : 'غير متصل'}
                 </span>
-              </div>
+          </div>
               
-              {lastUpdate && (
+          {lastUpdate && (
                 <div style={{
                   display: 'flex',
                   alignItems: 'center',
@@ -495,11 +457,11 @@ const UserPage = () => {
                 }}>
                   <Clock size={window.innerWidth <= 768 ? 16 : 18} />
                   <span style={{ fontWeight: '600' }}>
-                    آخر تحديث: {formatDate(lastUpdate)}
+              آخر تحديث: {formatDate(lastUpdate)}
                   </span>
-                </div>
-              )}
             </div>
+          )}
+        </div>
 
             {/* Currency count badge */}
             <div style={{
@@ -527,25 +489,8 @@ const UserPage = () => {
                     // Convert array to object format for easier rendering
                     const currenciesArray = response.data.currencies;
                     const currenciesObject = {};
-                    
-                    // First, add all currencies from currencyInfo with default rates if they don't exist
-                    Object.keys(currencyInfo).forEach(code => {
-                      const existingCurrency = currenciesArray.find(c => c.code === code);
-                      if (existingCurrency) {
-                        currenciesObject[code] = currency;
-                      } else {
-                        // Add default currency with placeholder rates
-                        currenciesObject[code] = {
-                          code: code,
-                          name: currencyInfo[code].name,
-                          buyRate: 0,
-                          sellRate: 0,
-                          spread: 0,
-                          spreadPercentage: '0.00',
-                          lastUpdated: new Date().toISOString(),
-                          isActive: true
-                        };
-                      }
+                    currenciesArray.forEach(currency => {
+                      currenciesObject[currency.code] = currency;
                     });
                     
                     setCurrencies(currenciesObject);
@@ -649,7 +594,7 @@ const UserPage = () => {
                       fontSize: window.innerWidth <= 768 ? '1.5rem' : '2rem' 
                     }}>{info.flag}</span>
                     <Icon size={window.innerWidth <= 768 ? 24 : 28} style={{ color: info.color }} />
-                    <div>
+                  <div>
                       <div className="currency-name" style={{ 
                         fontSize: window.innerWidth <= 768 ? '1.1rem' : '1.25rem', 
                         fontWeight: '700', 
@@ -663,11 +608,11 @@ const UserPage = () => {
                         color: '#64748b',
                         fontWeight: '500'
                       }}>
-                        {info.description}
-                      </div>
+                      {info.description}
                     </div>
                   </div>
-                  
+                </div>
+                
                   {/* Currency code badge */}
                   <div style={{
                     display: 'inline-block',
@@ -682,24 +627,7 @@ const UserPage = () => {
                     marginBottom: window.innerWidth <= 480 ? '8px' : '0'
                   }}>
                     {currency}
-                  </div>
-                  
-                  {/* Status indicator for currencies without rates */}
-                  {data.buyRate === 0 && data.sellRate === 0 && (
-                    <div style={{
-                      display: 'inline-block',
-                      background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
-                      color: 'white',
-                      padding: '4px 8px',
-                      borderRadius: '12px',
-                      fontSize: window.innerWidth <= 768 ? '0.7rem' : '0.8rem',
-                      fontWeight: '600',
-                      marginTop: '8px',
-                      marginLeft: '8px'
-                    }}>
-                      ⏳ في انتظار الأسعار
                     </div>
-                  )}
                 </div>
                 
                 <div className="currency-rates" style={{ 
@@ -732,21 +660,13 @@ const UserPage = () => {
                     <div className="rate-value" style={{
                       fontSize: window.innerWidth <= 768 ? '1.2rem' : '1.5rem',
                       fontWeight: '700',
-                      color: data.buyRate > 0 ? '#15803d' : '#9ca3af',
+                      color: '#15803d',
                       textAlign: 'center'
                     }}>
-                      {data.buyRate > 0 ? (
-                        <>
-                          {formatNumber(data.buyRate)} <span style={{ 
-                            fontSize: window.innerWidth <= 768 ? '0.9rem' : '1.1rem', 
-                            color: '#16a34a' 
-                          }}>ل.س</span>
-                        </>
-                      ) : (
-                        <span style={{ color: '#9ca3af', fontSize: window.innerWidth <= 768 ? '0.9rem' : '1rem' }}>
-                          لا توجد أسعار
-                        </span>
-                      )}
+                      {formatNumber(data.buyRate)} <span style={{ 
+                        fontSize: window.innerWidth <= 768 ? '0.9rem' : '1.1rem', 
+                        color: '#16a34a' 
+                      }}>ل.س</span>
                     </div>
                   </div>
                   
@@ -773,21 +693,13 @@ const UserPage = () => {
                     <div className="rate-value" style={{
                       fontSize: window.innerWidth <= 768 ? '1.2rem' : '1.5rem',
                       fontWeight: '700',
-                      color: data.sellRate > 0 ? '#b91c1c' : '#9ca3af',
+                      color: '#b91c1c',
                       textAlign: 'center'
                     }}>
-                      {data.sellRate > 0 ? (
-                        <>
-                          {formatNumber(data.sellRate)} <span style={{ 
-                            fontSize: window.innerWidth <= 768 ? '0.9rem' : '1.1rem', 
-                            color: '#dc2626' 
-                          }}>ل.س</span>
-                        </>
-                      ) : (
-                        <span style={{ color: '#9ca3af', fontSize: window.innerWidth <= 768 ? '0.9rem' : '1rem' }}>
-                          لا توجد أسعار
-                        </span>
-                      )}
+                      {formatNumber(data.sellRate)} <span style={{ 
+                        fontSize: window.innerWidth <= 768 ? '0.9rem' : '1.1rem', 
+                        color: '#dc2626' 
+                      }}>ل.س</span>
                     </div>
                   </div>
                 </div>
@@ -810,18 +722,14 @@ const UserPage = () => {
                   }}>
                     <span style={{ color: '#475569', fontWeight: '500' }}>الفرق:</span>
                     <span style={{ 
-                      color: data.buyRate > 0 && data.sellRate > 0 ? '#1e293b' : '#9ca3af', 
+                      color: '#1e293b', 
                       fontWeight: '600',
                       background: 'white',
                       padding: window.innerWidth <= 768 ? '3px 6px' : '4px 8px',
                       borderRadius: '6px',
                       border: '1px solid #e2e8f0'
                     }}>
-                      {data.buyRate > 0 && data.sellRate > 0 ? (
-                        `${formatNumber(data.sellRate - data.buyRate)} ل.س`
-                      ) : (
-                        'غير متوفر'
-                      )}
+                      {formatNumber(data.sellRate - data.buyRate)} ل.س
                     </span>
                   </div>
                 </div>
