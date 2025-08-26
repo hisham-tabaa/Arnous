@@ -144,10 +144,30 @@ const UserPage = () => {
         // Convert array to object format for easier rendering
         const currenciesArray = response.data.currencies;
         const currenciesObject = {};
-        currenciesArray.forEach(currency => {
-          currenciesObject[currency.code] = currency;
+        
+        // First, add all currencies from currencyInfo with default rates if they don't exist
+        Object.keys(currencyInfo).forEach(code => {
+          const existingCurrency = currenciesArray.find(c => c.code === code);
+          if (existingCurrency) {
+            currenciesObject[code] = existingCurrency;
+            console.log(`✅ Found existing currency: ${code} - ${existingCurrency.name}`);
+          } else {
+            // Add default currency with placeholder rates
+            currenciesObject[code] = {
+              code: code,
+              name: currencyInfo[code].name,
+              buyRate: 0,
+              sellRate: 0,
+              spread: 0,
+              spreadPercentage: '0.00',
+              lastUpdated: new Date().toISOString(),
+              isActive: true
+            };
+            console.log(`⚠️ Added default currency: ${code} - ${currencyInfo[code].name} (no rates yet)`);
+          }
         });
         
+        console.log('📊 Final currencies object:', currenciesObject);
         setCurrencies(currenciesObject);
         setLastUpdate(new Date().toISOString());
         setLoading(false);
@@ -198,9 +218,27 @@ const UserPage = () => {
         } else if (Array.isArray(updatedCurrencies)) {
           // Array of currencies received - convert to object format
           const currenciesObject = {};
-          updatedCurrencies.forEach(currency => {
-            currenciesObject[currency.code] = currency;
+          
+          // First, add all currencies from currencyInfo with default rates if they don't exist
+          Object.keys(currencyInfo).forEach(code => {
+            const existingCurrency = updatedCurrencies.find(c => c.code === code);
+            if (existingCurrency) {
+              currenciesObject[code] = existingCurrency;
+            } else {
+              // Add default currency with placeholder rates
+              currenciesObject[code] = {
+                code: code,
+                name: currencyInfo[code].name,
+                buyRate: 0,
+                sellRate: 0,
+                spread: 0,
+                spreadPercentage: '0.00',
+                lastUpdated: new Date().toISOString(),
+                isActive: true
+              };
+            }
           });
+          
           setCurrencies(currenciesObject);
           setLastUpdate(new Date().toISOString());
         } else {
@@ -489,8 +527,25 @@ const UserPage = () => {
                     // Convert array to object format for easier rendering
                     const currenciesArray = response.data.currencies;
                     const currenciesObject = {};
-                    currenciesArray.forEach(currency => {
-                      currenciesObject[currency.code] = currency;
+                    
+                    // First, add all currencies from currencyInfo with default rates if they don't exist
+                    Object.keys(currencyInfo).forEach(code => {
+                      const existingCurrency = currenciesArray.find(c => c.code === code);
+                      if (existingCurrency) {
+                        currenciesObject[code] = currency;
+                      } else {
+                        // Add default currency with placeholder rates
+                        currenciesObject[code] = {
+                          code: code,
+                          name: currencyInfo[code].name,
+                          buyRate: 0,
+                          sellRate: 0,
+                          spread: 0,
+                          spreadPercentage: '0.00',
+                          lastUpdated: new Date().toISOString(),
+                          isActive: true
+                        };
+                      }
                     });
                     
                     setCurrencies(currenciesObject);
@@ -628,6 +683,23 @@ const UserPage = () => {
                   }}>
                     {currency}
                   </div>
+                  
+                  {/* Status indicator for currencies without rates */}
+                  {data.buyRate === 0 && data.sellRate === 0 && (
+                    <div style={{
+                      display: 'inline-block',
+                      background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+                      color: 'white',
+                      padding: '4px 8px',
+                      borderRadius: '12px',
+                      fontSize: window.innerWidth <= 768 ? '0.7rem' : '0.8rem',
+                      fontWeight: '600',
+                      marginTop: '8px',
+                      marginLeft: '8px'
+                    }}>
+                      ⏳ في انتظار الأسعار
+                    </div>
+                  )}
                 </div>
                 
                 <div className="currency-rates" style={{ 
@@ -660,13 +732,21 @@ const UserPage = () => {
                     <div className="rate-value" style={{
                       fontSize: window.innerWidth <= 768 ? '1.2rem' : '1.5rem',
                       fontWeight: '700',
-                      color: '#15803d',
+                      color: data.buyRate > 0 ? '#15803d' : '#9ca3af',
                       textAlign: 'center'
                     }}>
-                      {formatNumber(data.buyRate)} <span style={{ 
-                        fontSize: window.innerWidth <= 768 ? '0.9rem' : '1.1rem', 
-                        color: '#16a34a' 
-                      }}>ل.س</span>
+                      {data.buyRate > 0 ? (
+                        <>
+                          {formatNumber(data.buyRate)} <span style={{ 
+                            fontSize: window.innerWidth <= 768 ? '0.9rem' : '1.1rem', 
+                            color: '#16a34a' 
+                          }}>ل.س</span>
+                        </>
+                      ) : (
+                        <span style={{ color: '#9ca3af', fontSize: window.innerWidth <= 768 ? '0.9rem' : '1rem' }}>
+                          لا توجد أسعار
+                        </span>
+                      )}
                     </div>
                   </div>
                   
@@ -693,13 +773,21 @@ const UserPage = () => {
                     <div className="rate-value" style={{
                       fontSize: window.innerWidth <= 768 ? '1.2rem' : '1.5rem',
                       fontWeight: '700',
-                      color: '#b91c1c',
+                      color: data.sellRate > 0 ? '#b91c1c' : '#9ca3af',
                       textAlign: 'center'
                     }}>
-                      {formatNumber(data.sellRate)} <span style={{ 
-                        fontSize: window.innerWidth <= 768 ? '0.9rem' : '1.1rem', 
-                        color: '#dc2626' 
-                      }}>ل.س</span>
+                      {data.sellRate > 0 ? (
+                        <>
+                          {formatNumber(data.sellRate)} <span style={{ 
+                            fontSize: window.innerWidth <= 768 ? '0.9rem' : '1.1rem', 
+                            color: '#dc2626' 
+                          }}>ل.س</span>
+                        </>
+                      ) : (
+                        <span style={{ color: '#9ca3af', fontSize: window.innerWidth <= 768 ? '0.9rem' : '1rem' }}>
+                          لا توجد أسعار
+                        </span>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -722,14 +810,18 @@ const UserPage = () => {
                   }}>
                     <span style={{ color: '#475569', fontWeight: '500' }}>الفرق:</span>
                     <span style={{ 
-                      color: '#1e293b', 
+                      color: data.buyRate > 0 && data.sellRate > 0 ? '#1e293b' : '#9ca3af', 
                       fontWeight: '600',
                       background: 'white',
                       padding: window.innerWidth <= 768 ? '3px 6px' : '4px 8px',
                       borderRadius: '6px',
                       border: '1px solid #e2e8f0'
                     }}>
-                      {formatNumber(data.sellRate - data.buyRate)} ل.س
+                      {data.buyRate > 0 && data.sellRate > 0 ? (
+                        `${formatNumber(data.sellRate - data.buyRate)} ل.س`
+                      ) : (
+                        'غير متوفر'
+                      )}
                     </span>
                   </div>
                 </div>
