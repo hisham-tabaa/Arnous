@@ -7,7 +7,7 @@ const axios = require('axios');
 require('dotenv').config();
 
 // Import Database Configuration
-const { connectDB, Currency, User, ActivityLog, Advice, getDbStatus, mongoose } = require('./config/database');
+const { connectDB, Currency, User, ActivityLog, Advice, getDbStatus } = require('./config/database');
 
 // Import Services
 const AuthService = require('./services/authService');
@@ -952,7 +952,7 @@ app.use((error, req, res, next) => {
 });
 
 // Start server
-server.listen(PORT, '0.0.0.0', () => {
+server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
   console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
 });
