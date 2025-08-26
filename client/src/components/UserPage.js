@@ -392,7 +392,7 @@ const UserPage = () => {
             <p className="subtitle" style={{ 
               fontSize: window.innerWidth <= 768 ? '1rem' : '1.2rem', 
               margin: '0 0 24px 0',
-              opacity: 0.9,
+           
               fontWeight: '500',
               padding: window.innerWidth <= 768 ? '0 16px' : '0'
             }}>
