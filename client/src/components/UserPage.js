@@ -87,6 +87,34 @@ const UserPage = () => {
       flag: '🇹🇷',
       color: '#f59e0b',
       description: 'Turkish Lira'
+    },
+    JPY: { 
+      name: 'Japanese Yen', 
+      icon: Banknote, 
+      flag: '🇯🇵',
+      color: '#ef4444',
+      description: 'Japanese Yen'
+    },
+    SAR: { 
+      name: 'Saudi Riyal', 
+      icon: Banknote, 
+      flag: '🇸🇦',
+      color: '#10b981',
+      description: 'Saudi Arabian Riyal'
+    },
+    JOD: { 
+      name: 'Jordanian Dinar', 
+      icon: Banknote, 
+      flag: '🇯🇴',
+      color: '#f97316',
+      description: 'Jordanian Dinar'
+    },
+    KWD: { 
+      name: 'Kuwaiti Dinar', 
+      icon: Banknote, 
+      flag: '🇰🇼',
+      color: '#6366f1',
+      description: 'Kuwaiti Dinar'
     }
   };
 
@@ -222,6 +250,13 @@ const UserPage = () => {
           {Object.keys(currencies).map(currency => {
             const info = currencyInfo[currency];
             const data = currencies[currency];
+            
+            // Skip currencies without info defined
+            if (!info) {
+              console.warn(`Currency info not found for: ${currency}`);
+              return null;
+            }
+            
             const Icon = info.icon;
             
             return (

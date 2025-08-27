@@ -28,13 +28,7 @@ const CurrencySchema = new mongoose.Schema({
   sellRate: {
     type: Number,
     required: true,
-    min: 0,
-    validate: {
-      validator: function(value) {
-        return value > this.buyRate;
-      },
-      message: 'Sell rate must be greater than buy rate'
-    }
+    min: 0
   },
   isActive: {
     type: Boolean,
@@ -75,6 +69,13 @@ CurrencySchema.virtual('spreadPercentage').get(function() {
 
 // Pre-save middleware to update lastUpdated and add to history
 CurrencySchema.pre('save', function(next) {
+  // Validate that sell rate is greater than buy rate
+  if (this.sellRate <= this.buyRate) {
+    const error = new Error(`Sell rate (${this.sellRate}) must be greater than buy rate (${this.buyRate}) for ${this.code}`);
+    error.name = 'ValidationError';
+    return next(error);
+  }
+  
   if (this.isModified('buyRate') || this.isModified('sellRate')) {
     this.lastUpdated = new Date();
     
@@ -91,6 +92,37 @@ CurrencySchema.pre('save', function(next) {
       this.updateHistory = this.updateHistory.slice(-10);
     }
   }
+  next();
+});
+
+// Pre-update validation hook for findOneAndUpdate operations
+CurrencySchema.pre(['findOneAndUpdate', 'updateOne', 'updateMany'], function(next) {
+  const update = this.getUpdate();
+  
+  // If both buyRate and sellRate are being updated
+  if (update.$set && update.$set.buyRate !== undefined && update.$set.sellRate !== undefined) {
+    const buyRate = parseFloat(update.$set.buyRate);
+    const sellRate = parseFloat(update.$set.sellRate);
+    
+    if (isNaN(buyRate) || isNaN(sellRate)) {
+      const error = new Error(`Invalid rates: buyRate=${update.$set.buyRate}, sellRate=${update.$set.sellRate}`);
+      error.name = 'ValidationError';
+      return next(error);
+    }
+    
+    if (buyRate <= 0 || sellRate <= 0) {
+      const error = new Error(`Rates must be positive: buyRate=${buyRate}, sellRate=${sellRate}`);
+      error.name = 'ValidationError';
+      return next(error);
+    }
+    
+    if (sellRate <= buyRate) {
+      const error = new Error(`Sell rate (${sellRate}) must be greater than buy rate (${buyRate})`);
+      error.name = 'ValidationError';
+      return next(error);
+    }
+  }
+  
   next();
 });
 
@@ -121,12 +153,29 @@ CurrencySchema.statics.updateMultiple = async function(currencyUpdates, adminUse
   
   for (const [codeRaw, rates] of Object.entries(currencyUpdates)) {
     const code = codeRaw.toUpperCase();
+    
+    // Convert rates to numbers and validate
+    const buyRate = parseFloat(rates.buyRate);
+    const sellRate = parseFloat(rates.sellRate);
+    
+    if (isNaN(buyRate) || isNaN(sellRate)) {
+      throw new Error(`Invalid rates for ${code}: buyRate=${rates.buyRate}, sellRate=${rates.sellRate}`);
+    }
+    
+    if (buyRate <= 0 || sellRate <= 0) {
+      throw new Error(`Rates must be positive for ${code}: buyRate=${buyRate}, sellRate=${sellRate}`);
+    }
+    
+    if (sellRate <= buyRate) {
+      throw new Error(`Sell rate must be greater than buy rate for ${code}: buyRate=${buyRate}, sellRate=${sellRate}`);
+    }
+    
     const update = await this.findOneAndUpdate(
       { code },
       {
         $set: {
-          buyRate: rates.buyRate,
-          sellRate: rates.sellRate,
+          buyRate: buyRate,
+          sellRate: sellRate,
           lastUpdated: new Date(),
           createdBy: adminUser
         },

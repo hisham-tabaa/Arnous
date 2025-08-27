@@ -282,11 +282,14 @@ const ProtectedAdminDashboard = ({ onLogout }) => {
   };
 
   const handleCurrencyChange = (currency, field, value) => {
+    // Ensure the value is a valid number string or empty
+    const sanitizedValue = value === '' ? '' : value;
+    
     setCurrencies(prev => ({
       ...prev,
       [currency]: {
         ...prev[currency],
-        [field]: value
+        [field]: sanitizedValue
       }
     }));
   };
@@ -301,15 +304,61 @@ const ProtectedAdminDashboard = ({ onLogout }) => {
         return;
       }
 
-      const currencyData = Object.keys(currencies).reduce((acc, key) => {
-        if (currencies[key].buyRate && currencies[key].sellRate) {
-          acc[key] = { 
-            buyRate: parseFloat(currencies[key].buyRate),
-            sellRate: parseFloat(currencies[key].sellRate)
-          };
+      // Validate and prepare currency data
+      const currencyData = {};
+      const validationErrors = [];
+
+      Object.keys(currencies).forEach(key => {
+        const currency = currencies[key];
+        
+        // Skip if both rates are empty
+        if (!currency.buyRate && !currency.sellRate) {
+          return;
         }
-        return acc;
-      }, {});
+        
+        // Check if both rates are provided
+        if (!currency.buyRate || !currency.sellRate) {
+          validationErrors.push(`${key}: Both buy and sell rates are required`);
+          return;
+        }
+        
+        const buyRate = parseFloat(currency.buyRate);
+        const sellRate = parseFloat(currency.sellRate);
+        
+        // Validate numbers
+        if (isNaN(buyRate) || isNaN(sellRate)) {
+          validationErrors.push(`${key}: Rates must be valid numbers`);
+          return;
+        }
+        
+        // Validate positive values
+        if (buyRate <= 0 || sellRate <= 0) {
+          validationErrors.push(`${key}: Rates must be positive numbers`);
+          return;
+        }
+        
+        // Validate sell rate > buy rate
+        if (sellRate <= buyRate) {
+          validationErrors.push(`${key}: Sell rate (${sellRate}) must be greater than buy rate (${buyRate})`);
+          return;
+        }
+        
+        currencyData[key] = { buyRate, sellRate };
+      });
+
+      // Show validation errors if any
+      if (validationErrors.length > 0) {
+        showNotification(`Validation errors: ${validationErrors.join(', ')}`, 'error');
+        setLoading(false);
+        return;
+      }
+
+      // Check if there's any data to update
+      if (Object.keys(currencyData).length === 0) {
+        showNotification('Please enter currency rates to update', 'error');
+        setLoading(false);
+        return;
+      }
 
       await axios.post('/api/currencies', 
         { currencies: currencyData },
@@ -349,8 +398,15 @@ const ProtectedAdminDashboard = ({ onLogout }) => {
         handleLogout();
         return;
       }
+      
       console.error('Error updating currencies:', error);
-      showNotification('Error updating currency rates', 'error');
+      
+      // Show specific error message from server
+      const errorMessage = error.response?.data?.error || 
+                          error.response?.data?.message || 
+                          'Error updating currency rates';
+      
+      showNotification(errorMessage, 'error');
     }
     setLoading(false);
   };
@@ -521,6 +577,8 @@ const ProtectedAdminDashboard = ({ onLogout }) => {
                       placeholder={`Enter ${currency} buy rate in SYP`}
                       value={currencies[currency].buyRate}
                       onChange={(e) => handleCurrencyChange(currency, 'buyRate', e.target.value)}
+                      step="0.01"
+                      min="0"
                     />
                   </div>
                   
@@ -535,6 +593,8 @@ const ProtectedAdminDashboard = ({ onLogout }) => {
                       placeholder={`Enter ${currency} sell rate in SYP`}
                       value={currencies[currency].sellRate}
                       onChange={(e) => handleCurrencyChange(currency, 'sellRate', e.target.value)}
+                      step="0.01"
+                      min="0"
                     />
                   </div>
                 </div>
