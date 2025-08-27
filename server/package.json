@@ -4,8 +4,8 @@
   "description": "Backend server for currency exchange dashboard with MongoDB",
   "main": "index.js",
   "scripts": {
-    "start": "node index-simple.js",
-    "dev": "nodemon index-simple.js",
+    "start": "node index.js",
+    "dev": "nodemon index.js",
     "db:init": "node scripts/init-db.js",
     "db:reset": "node scripts/init-db.js reset",
     "db:status": "node scripts/init-db.js status",

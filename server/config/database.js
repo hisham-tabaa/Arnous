@@ -9,25 +9,70 @@ const mongoOptions = {
   useNewUrlParser: true,
   useUnifiedTopology: true,
   maxPoolSize: 10,
-  serverSelectionTimeoutMS: 5000,
+  serverSelectionTimeoutMS: 10000, // Increased for Railway
   socketTimeoutMS: 45000,
+  connectTimeoutMS: 10000, // Added for Railway
   bufferMaxEntries: 0,
-  bufferCommands: false
+  bufferCommands: false,
+  retryWrites: true,
+  w: 'majority'
 };
 
 // Connect to MongoDB
 const connectDB = async () => {
   try {
-    // Prefer explicit production URI, then fall back to common variants
-    const mongoURI = process.env.MONGODB_URI_PROD 
-      || process.env.MONGODB_URI 
-      || process.env.MONGODB_URL 
-      || process.env.MONGO_URL 
-      || process.env.MONGO_PUBLIC_URL;
+    // Build MongoDB URI based on available environment variables
+    let mongoURI;
+    
+    // Check for Railway MongoDB variables first
+    if (process.env.MONGOHOST && process.env.MONGOUSER && process.env.MONGOPASSWORD) {
+      // Railway MongoDB service variables
+      const host = process.env.MONGOHOST;
+      const port = process.env.MONGOPORT || '27017';
+      const username = process.env.MONGOUSER;
+      const password = process.env.MONGOPASSWORD;
+      const database = process.env.MONGO_INITDB_DATABASE || 'arnous_exchange';
+      
+      mongoURI = `mongodb://${username}:${password}@${host}:${port}/${database}?authSource=admin`;
+      console.log('Using Railway MongoDB service connection');
+    }
+    // Check for direct Railway MongoDB URLs
+    else if (process.env.MONGO_URL) {
+      mongoURI = process.env.MONGO_URL;
+      console.log('Using MONGO_URL connection');
+    }
+    else if (process.env.MONGO_PUBLIC_URL) {
+      mongoURI = process.env.MONGO_PUBLIC_URL;
+      console.log('Using MONGO_PUBLIC_URL connection');
+    }
+    // Fall back to standard MongoDB URIs
+    else if (process.env.MONGODB_URI_PROD) {
+      mongoURI = process.env.MONGODB_URI_PROD;
+      console.log('Using MONGODB_URI_PROD connection');
+    }
+    else if (process.env.MONGODB_URI) {
+      mongoURI = process.env.MONGODB_URI;
+      console.log('Using MONGODB_URI connection');
+    }
+    else if (process.env.MONGODB_URL) {
+      mongoURI = process.env.MONGODB_URL;
+      console.log('Using MONGODB_URL connection');
+    }
     
     if (!mongoURI) {
+      console.error('Available environment variables:', {
+        MONGOHOST: process.env.MONGOHOST ? 'SET' : 'NOT SET',
+        MONGOUSER: process.env.MONGOUSER ? 'SET' : 'NOT SET',
+        MONGOPASSWORD: process.env.MONGOPASSWORD ? 'SET' : 'NOT SET',
+        MONGO_URL: process.env.MONGO_URL ? 'SET' : 'NOT SET',
+        MONGO_PUBLIC_URL: process.env.MONGO_PUBLIC_URL ? 'SET' : 'NOT SET',
+        MONGODB_URI: process.env.MONGODB_URI ? 'SET' : 'NOT SET'
+      });
       throw new Error('MongoDB URI is not defined in environment variables');
     }
+    
+    console.log('Connecting to MongoDB...');
+    console.log('MongoDB URI (masked):', mongoURI.replace(/\/\/[^:]+:[^@]+@/, '//***:***@'));
     
     const conn = await mongoose.connect(mongoURI, mongoOptions);
     
