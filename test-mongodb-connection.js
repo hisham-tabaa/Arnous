@@ -52,10 +52,12 @@ async function testConnection() {
   try {
     console.log('\n🔄 Attempting to connect...');
     await mongoose.connect(mongoURI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
+      maxPoolSize: 10,
       serverSelectionTimeoutMS: 10000,
       connectTimeoutMS: 10000,
+      socketTimeoutMS: 45000,
+      retryWrites: true,
+      w: 'majority'
     });
     
     console.log('✅ MongoDB connection successful!');

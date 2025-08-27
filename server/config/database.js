@@ -6,14 +6,10 @@ const Advice = require('../models/Advice');
 
 // MongoDB connection options
 const mongoOptions = {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
   maxPoolSize: 10,
   serverSelectionTimeoutMS: 10000, // Increased for Railway
   socketTimeoutMS: 45000,
   connectTimeoutMS: 10000, // Added for Railway
-  bufferMaxEntries: 0,
-  bufferCommands: false,
   retryWrites: true,
   w: 'majority'
 };
