@@ -274,19 +274,31 @@ class CurrencyService {
   static validateSingleCurrency(currencyData, code = '') {
     const errors = [];
     
+    // Check if data exists
+    if (!currencyData) {
+      errors.push(`${code}: Currency data is missing`);
+      return errors;
+    }
+    
     // Convert to numbers to ensure proper comparison
     const buyRate = parseFloat(currencyData.buyRate);
     const sellRate = parseFloat(currencyData.sellRate);
     
-    if (!buyRate || buyRate <= 0) {
-      errors.push(`${code}: Buy rate must be greater than 0 (received: ${currencyData.buyRate})`);
+    // Check for NaN values
+    if (isNaN(buyRate)) {
+      errors.push(`${code}: Buy rate must be a valid number (received: ${currencyData.buyRate})`);
+    } else if (buyRate <= 0) {
+      errors.push(`${code}: Buy rate must be greater than 0 (received: ${buyRate})`);
     }
     
-    if (!sellRate || sellRate <= 0) {
-      errors.push(`${code}: Sell rate must be greater than 0 (received: ${currencyData.sellRate})`);
+    if (isNaN(sellRate)) {
+      errors.push(`${code}: Sell rate must be a valid number (received: ${currencyData.sellRate})`);
+    } else if (sellRate <= 0) {
+      errors.push(`${code}: Sell rate must be greater than 0 (received: ${sellRate})`);
     }
     
-    if (buyRate && sellRate && buyRate >= sellRate) {
+    // Only check comparison if both rates are valid numbers
+    if (!isNaN(buyRate) && !isNaN(sellRate) && buyRate >= sellRate) {
       errors.push(`${code}: Buy rate (${buyRate}) must be less than sell rate (${sellRate})`);
     }
     

@@ -88,33 +88,49 @@ connectDB().then(() => {
   process.exit(1);
 });
 
-// Socket.io authentication middleware
+// Socket.io authentication middleware (optional for public connections)
 io.use(async (socket, next) => {
   try {
     const token = socket.handshake.auth.token;
+    
+    // If no token provided, allow connection as anonymous user
     if (!token) {
-      return next(new Error('Authentication error'));
+      socket.userId = null;
+      socket.user = null;
+      socket.isAnonymous = true;
+      return next();
     }
 
+    // If token provided, validate it
     const validation = await AuthService.validateToken(token);
     if (!validation.valid) {
-      return next(new Error('Invalid token'));
+      // If token is invalid, still allow connection as anonymous
+      socket.userId = null;
+      socket.user = null;
+      socket.isAnonymous = true;
+      return next();
     }
 
     socket.userId = validation.user.id;
     socket.user = validation.user;
+    socket.isAnonymous = false;
     next();
   } catch (error) {
-    next(new Error('Authentication error'));
+    // On any error, allow connection as anonymous
+    socket.userId = null;
+    socket.user = null;
+    socket.isAnonymous = true;
+    next();
   }
 });
 
 // Socket.io connection handling
 io.on('connection', (socket) => {
-  console.log(`User connected: ${socket.user?.username || 'Anonymous'}`);
+  const userInfo = socket.isAnonymous ? 'Anonymous User' : socket.user?.username || 'Unknown User';
+  console.log(`🔌 WebSocket connected: ${userInfo} (ID: ${socket.id})`);
   
   socket.on('disconnect', () => {
-    console.log(`User disconnected: ${socket.user?.username || 'Anonymous'}`);
+    console.log(`🔌 WebSocket disconnected: ${userInfo} (ID: ${socket.id})`);
   });
 });
 
@@ -134,6 +150,76 @@ app.get('/api/health', (req, res) => {
     environment: process.env.NODE_ENV || 'development'
   });
 });
+
+// Database verification endpoint (admin only)
+app.get('/api/admin/database/verify', 
+  verifyToken, 
+  requireAdmin,
+  async (req, res) => {
+    try {
+      console.log('🔍 Admin database verification requested');
+      
+      // Get collection information
+      const collections = await mongoose.connection.db.listCollections().toArray();
+      const collectionInfo = {};
+      
+      for (const collection of collections) {
+        const count = await mongoose.connection.db.collection(collection.name).countDocuments();
+        collectionInfo[collection.name] = {
+          name: collection.name,
+          documentCount: count
+        };
+      }
+      
+      // Get specific model counts
+      const currencies = await Currency.countDocuments();
+      const users = await User.countDocuments();
+      const activityLogs = await ActivityLog.countDocuments();
+      const advice = await Advice.countDocuments();
+      
+      // Get sample data
+      const sampleCurrencies = await Currency.find({}).limit(5);
+      const sampleUsers = await User.find({}).select('username role isActive').limit(5);
+      
+      res.json({
+        success: true,
+        database: {
+          name: mongoose.connection.db.databaseName,
+          host: mongoose.connection.host,
+          readyState: mongoose.connection.readyState
+        },
+        collections: collectionInfo,
+        summary: {
+          currencies,
+          users,
+          activityLogs,
+          advice
+        },
+        samples: {
+          currencies: sampleCurrencies.map(c => ({
+            code: c.code,
+            name: c.name,
+            buyRate: c.buyRate,
+            sellRate: c.sellRate,
+            isActive: c.isActive
+          })),
+          users: sampleUsers.map(u => ({
+            username: u.username,
+            role: u.role,
+            isActive: u.isActive
+          }))
+        }
+      });
+    } catch (error) {
+      console.error('❌ Database verification error:', error);
+      res.status(500).json({
+        error: 'Database verification failed',
+        code: 'VERIFICATION_FAILED',
+        details: error.message
+      });
+    }
+  }
+);
 
 // Authentication routes
 app.post('/api/auth/login', logActivity('login', 'auth'), async (req, res) => {
@@ -276,6 +362,8 @@ app.post('/api/currencies',
       );
 
       // Emit real-time update to all connected clients
+      console.log(`📡 Broadcasting currency update to ${io.engine.clientsCount} connected clients`);
+      console.log('📊 Updated currencies:', Object.keys(updatedCurrencies).join(', '));
       io.emit('currencyUpdate', updatedCurrencies);
       
       res.json({ 
@@ -286,8 +374,11 @@ app.post('/api/currencies',
     } catch (error) {
       console.error('❌ API: Error updating currencies:', error);
       
-      // Check if it's a validation error
-      if (error.message.includes('Validation failed')) {
+      // Check for different types of errors
+      if (error.message.includes('Validation failed') || 
+          error.message.includes('must be greater than') ||
+          error.message.includes('must be a valid number') ||
+          error.message.includes('must be positive')) {
         return res.status(400).json({
           error: error.message,
           code: 'VALIDATION_ERROR',
@@ -295,8 +386,18 @@ app.post('/api/currencies',
         });
       }
       
+      // Handle MongoDB validation errors
+      if (error.name === 'ValidationError') {
+        const validationErrors = Object.values(error.errors).map(err => err.message);
+        return res.status(400).json({
+          error: 'Validation failed: ' + validationErrors.join(', '),
+          code: 'VALIDATION_ERROR',
+          details: validationErrors
+        });
+      }
+      
       res.status(400).json({
-        error: error.message,
+        error: error.message || 'Failed to update currencies',
         code: 'UPDATE_FAILED'
       });
     }

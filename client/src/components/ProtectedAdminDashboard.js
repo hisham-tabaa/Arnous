@@ -178,6 +178,18 @@ const ProtectedAdminDashboard = ({ onLogout }) => {
     
     newSocket.on('currencyUpdate', (updatedCurrencies) => {
       console.log('Received currency update:', updatedCurrencies);
+      // Update local currency state with the new data
+      setCurrencies(prev => ({
+        ...prev,
+        ...Object.keys(updatedCurrencies).reduce((acc, key) => {
+          acc[key] = {
+            buyRate: updatedCurrencies[key].buyRate?.toString() || '',
+            sellRate: updatedCurrencies[key].sellRate?.toString() || '',
+            lastUpdated: updatedCurrencies[key].lastUpdated
+          };
+          return acc;
+        }, {})
+      }));
     });
     
     newSocket.on('publishUpdate', (data) => {
