@@ -274,17 +274,20 @@ class CurrencyService {
   static validateSingleCurrency(currencyData, code = '') {
     const errors = [];
     
-    if (!currencyData.buyRate || currencyData.buyRate <= 0) {
-      errors.push(`${code}: Buy rate must be greater than 0`);
+    // Convert to numbers to ensure proper comparison
+    const buyRate = parseFloat(currencyData.buyRate);
+    const sellRate = parseFloat(currencyData.sellRate);
+    
+    if (!buyRate || buyRate <= 0) {
+      errors.push(`${code}: Buy rate must be greater than 0 (received: ${currencyData.buyRate})`);
     }
     
-    if (!currencyData.sellRate || currencyData.sellRate <= 0) {
-      errors.push(`${code}: Sell rate must be greater than 0`);
+    if (!sellRate || sellRate <= 0) {
+      errors.push(`${code}: Sell rate must be greater than 0 (received: ${currencyData.sellRate})`);
     }
     
-    if (currencyData.buyRate && currencyData.sellRate && 
-        currencyData.buyRate >= currencyData.sellRate) {
-      errors.push(`${code}: Buy rate must be less than sell rate`);
+    if (buyRate && sellRate && buyRate >= sellRate) {
+      errors.push(`${code}: Buy rate (${buyRate}) must be less than sell rate (${sellRate})`);
     }
     
     if (currencyData.code && !['USD', 'EUR', 'GBP', 'TRY', 'JPY', 'SAR', 'JOD', 'KWD'].includes(currencyData.code)) {

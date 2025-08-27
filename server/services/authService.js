@@ -198,14 +198,15 @@ class AuthService {
   static async logFailedLogin(identifier, ipAddress, userAgent, reason) {
     try {
       await ActivityLog.logActivity({
-        user: 'anonymous',
+        user: null, // Use null instead of 'anonymous'
         action: 'login',
         resource: 'auth',
         details: {
           identifier,
           reason,
           ipAddress,
-          userAgent
+          userAgent,
+          isAnonymous: true
         },
         ipAddress,
         userAgent,

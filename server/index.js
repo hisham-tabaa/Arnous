@@ -284,8 +284,18 @@ app.post('/api/currencies',
         message: 'Currency rates updated successfully'
       });
     } catch (error) {
-      console.error('Error updating currencies:', error);
-      res.status(400).json({ 
+      console.error('❌ API: Error updating currencies:', error);
+      
+      // Check if it's a validation error
+      if (error.message.includes('Validation failed')) {
+        return res.status(400).json({
+          error: error.message,
+          code: 'VALIDATION_ERROR',
+          details: 'Please check that buy rates are less than sell rates and all values are positive numbers.'
+        });
+      }
+      
+      res.status(400).json({
         error: error.message,
         code: 'UPDATE_FAILED'
       });

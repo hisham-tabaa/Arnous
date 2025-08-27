@@ -108,7 +108,7 @@ const logActivity = (action, resource) => {
       setTimeout(async () => {
         try {
           await ActivityLog.logActivity({
-            user: req.user?._id || 'anonymous',
+            user: req.user?._id || null, // Use null instead of 'anonymous'
             action,
             resource,
             details: {
@@ -116,7 +116,8 @@ const logActivity = (action, resource) => {
               path: req.path,
               body: req.body,
               params: req.params,
-              query: req.query
+              query: req.query,
+              isAnonymous: !req.user // Flag to indicate anonymous user
             },
             ipAddress: req.ip || req.connection.remoteAddress,
             userAgent: req.get('User-Agent'),
