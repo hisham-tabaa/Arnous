@@ -7,7 +7,7 @@ const axios = require('axios');
 require('dotenv').config();
 
 // Import Database Configuration
-const { connectDB, Currency, User, ActivityLog, Advice, getDbStatus, mongoose } = require('./config/database');
+ const { connectDB, Currency, User, ActivityLog, Advice, getDbStatus, mongoose } = require('./config/database');
 
 // Import Services
 const AuthService = require('./services/authService');
