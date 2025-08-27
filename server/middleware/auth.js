@@ -2,7 +2,7 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const ActivityLog = require('../models/ActivityLog');
 
-// Middleware to verify JWT token
+
 const verifyToken = async (req, res, next) => {
   try {
     const token = req.headers.authorization?.replace('Bearer ', '');
@@ -56,7 +56,7 @@ const verifyToken = async (req, res, next) => {
   }
 };
 
-// Middleware to check if user has specific permission
+
 const requirePermission = (permission) => {
   return (req, res, next) => {
     if (!req.user) {
@@ -79,7 +79,7 @@ const requirePermission = (permission) => {
   };
 };
 
-// Middleware to check if user has admin role
+
 const requireAdmin = (req, res, next) => {
   if (!req.user) {
     return res.status(401).json({ 
@@ -98,7 +98,6 @@ const requireAdmin = (req, res, next) => {
   next();
 };
 
-// Middleware to log activity
 const logActivity = (action, resource) => {
   return async (req, res, next) => {
     const originalSend = res.send;
