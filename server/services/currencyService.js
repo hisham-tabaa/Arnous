@@ -5,14 +5,21 @@ class CurrencyService {
   // Get all active currencies
   static async getAllCurrencies() {
     try {
+      console.log('🔍 CurrencyService: Fetching all currencies...');
       const currencies = await Currency.getActiveCurrencies();
+      console.log(`📊 CurrencyService: Found ${currencies.length} active currencies`);
+      
       // Return a keyed map for frontend consumption
-      return currencies.reduce((acc, currency) => {
+      const result = currencies.reduce((acc, currency) => {
         const formatted = currency.getFormattedRates();
         acc[formatted.code] = formatted;
         return acc;
       }, {});
+      
+      console.log('📋 CurrencyService: Returning currencies:', Object.keys(result).join(', '));
+      return result;
     } catch (error) {
+      console.error('❌ CurrencyService: Failed to fetch currencies:', error);
       throw new Error('Failed to fetch currencies');
     }
   }

@@ -22,6 +22,7 @@ MONGO_INITDB_DATABASE=arnous_exchange
 # Environment
 NODE_ENV=production
 PORT=8080
+CLIENT_URL=https://arnous-production.up.railway.app
 ```
 
 ### Railway Auto-Generated Variables:

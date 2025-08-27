@@ -59,10 +59,14 @@ const server = http.createServer(app);
 const io = socketIo(server, {
   cors: {
     origin: process.env.NODE_ENV === 'production' 
-      ? process.env.CLIENT_URL || "http://localhost:3000"
+      ? ["https://arnous-production.up.railway.app", process.env.CLIENT_URL].filter(Boolean)
       : "http://localhost:3000",
-    methods: ["GET", "POST"]
-  }
+    methods: ["GET", "POST"],
+    credentials: true
+  },
+  transports: ['websocket', 'polling'],
+  pingTimeout: 60000,
+  pingInterval: 25000
 });
 
 const PORT = process.env.PORT || 5000;
@@ -216,11 +220,13 @@ app.post('/api/auth/change-password', verifyToken, logActivity('password_change'
 // Currency routes
 app.get('/api/currencies', async (req, res) => {
   try {
+    console.log('🌐 API: /api/currencies requested');
     const currencies = await CurrencyService.getAllCurrencies();
+    console.log('✅ API: Currencies fetched successfully, sending response');
     res.json({ currencies });
   } catch (error) {
-    console.error('Error fetching currencies:', error);
-    res.status(500).json({ 
+    console.error('❌ API: Error fetching currencies:', error);
+    res.status(500).json({
       error: 'Failed to fetch currencies',
       code: 'FETCH_FAILED'
     });

@@ -87,11 +87,14 @@ const connectDB = async () => {
 // Initialize database with default data
 const initializeDatabase = async () => {
   try {
+    console.log('🔍 Checking database initialization...');
+    
     // Check if currencies exist
     const currencyCount = await Currency.countDocuments();
+    console.log(`📊 Found ${currencyCount} currencies in database`);
     
     if (currencyCount === 0) {
-      console.log('Initializing currencies...');
+      console.log('🚀 Initializing currencies...');
       
       const defaultCurrencies = [
         {
@@ -153,14 +156,25 @@ const initializeDatabase = async () => {
       ];
       
       await Currency.insertMany(defaultCurrencies);
-      console.log('Default currencies created successfully');
+      console.log('✅ Default currencies created successfully');
+      
+      // Verify currencies were created
+      const newCount = await Currency.countDocuments();
+      console.log(`📊 Total currencies after initialization: ${newCount}`);
+    } else {
+      console.log('✅ Currencies already exist, skipping initialization');
+      
+      // Log existing currencies
+      const existingCurrencies = await Currency.find({}, 'code name buyRate sellRate').limit(5);
+      console.log('📋 Existing currencies:', existingCurrencies.map(c => `${c.code}: ${c.buyRate}/${c.sellRate}`).join(', '));
     }
     
     // Check if admin user exists
     const adminCount = await User.countDocuments({ role: 'admin' });
+    console.log(`👥 Found ${adminCount} admin users in database`);
     
     if (adminCount === 0) {
-      console.log('Creating default admin user...');
+      console.log('🔧 Creating default admin user...');
       
       const adminUser = await User.createAdmin({
         username: process.env.ADMIN_USERNAME || 'admin',
