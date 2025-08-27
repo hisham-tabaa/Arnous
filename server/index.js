@@ -7,7 +7,7 @@ const axios = require('axios');
 require('dotenv').config();
 
 // Import Database Configuration
- const { connectDB, Currency, User, ActivityLog, Advice, getDbStatus, mongoose } = require('./config/database');
+const { connectDB, Currency, User, ActivityLog, Advice, getDbStatus, mongoose } = require('./config/database');
 
 // Import Services
 const AuthService = require('./services/authService');
@@ -29,6 +29,9 @@ const FacebookAPI = require('./socialMedia/facebook');
 const InstagramAPI = require('./socialMedia/instagram');
 const TelegramAPI = require('./socialMedia/telegram');
 const WhatsAppAPI = require('./socialMedia/whatsapp');
+
+// Import Social Media Configuration
+const { getAllSocialMedia, validateSocialMediaUrls } = require('./config/socialMedia');
 
 // Initialize Social Media APIs with environment variables
 const facebookAPI = new FacebookAPI(
@@ -937,6 +940,123 @@ app.put('/api/users/profile',
   }
 );
 
+// Social Media Information Endpoints
+app.get('/api/social/links', async (req, res) => {
+  try {
+    const socialMedia = getAllSocialMedia();
+    res.json({
+      success: true,
+      data: socialMedia
+    });
+  } catch (error) {
+    console.error('Error fetching social media links:', error);
+    res.status(500).json({ error: 'Failed to fetch social media links' });
+  }
+});
+
+app.get('/api/social/validate', async (req, res) => {
+  try {
+    const validation = validateSocialMediaUrls();
+    res.json({
+      success: true,
+      data: validation
+    });
+  } catch (error) {
+    console.error('Error validating social media URLs:', error);
+    res.status(500).json({ error: 'Failed to validate social media URLs' });
+  }
+});
+
+// Social Media Posting Endpoints
+app.post('/api/social/facebook', verifyToken, requirePermission('social:post'), async (req, res) => {
+  try {
+    const { message } = req.body;
+    if (!message) {
+      return res.status(400).json({ error: 'Message is required' });
+    }
+
+    const result = await facebookAPI.publishPost(message);
+    
+    // Log the activity
+    await logActivity(req.user.id, 'social_post', {
+      platform: 'facebook',
+      message: message,
+      result: result
+    });
+
+    res.json(result);
+  } catch (error) {
+    console.error('Facebook posting error:', error);
+    res.status(500).json({ error: 'Failed to post to Facebook' });
+  }
+});
+
+app.post('/api/social/instagram', verifyToken, requirePermission('social:post'), async (req, res) => {
+  try {
+    const { message } = req.body;
+    if (!message) {
+      return res.status(400).json({ error: 'Message is required' });
+    }
+
+    const result = await instagramAPI.publishPost(message);
+    
+    await logActivity(req.user.id, 'social_post', {
+      platform: 'instagram',
+      message: message,
+      result: result
+    });
+
+    res.json(result);
+  } catch (error) {
+    console.error('Instagram posting error:', error);
+    res.status(500).json({ error: 'Failed to post to Instagram' });
+  }
+});
+
+app.post('/api/social/telegram', verifyToken, requirePermission('social:post'), async (req, res) => {
+  try {
+    const { message } = req.body;
+    if (!message) {
+      return res.status(400).json({ error: 'Message is required' });
+    }
+
+    const result = await telegramAPI.publishPost(message);
+    
+    await logActivity(req.user.id, 'social_post', {
+      platform: 'telegram',
+      message: message,
+      result: result
+    });
+
+    res.json(result);
+  } catch (error) {
+    console.error('Telegram posting error:', error);
+    res.status(500).json({ error: 'Failed to post to Telegram' });
+  }
+});
+
+app.post('/api/social/whatsapp', verifyToken, requirePermission('social:post'), async (req, res) => {
+  try {
+    const { message } = req.body;
+    if (!message) {
+      return res.status(400).json({ error: 'Message is required' });
+    }
+
+    const result = await whatsappAPI.publishToStatus(message);
+    
+    await logActivity(req.user.id, 'social_post', {
+      platform: 'whatsapp',
+      message: message,
+      result: result
+    });
+
+    res.json(result);
+  } catch (error) {
+    console.error('WhatsApp posting error:', error);
+    res.status(500).json({ error: 'Failed to post to WhatsApp' });
+  }
+});
+
 // Serve React app for all other routes
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, '../client/build', 'index.html'));
@@ -952,7 +1072,7 @@ app.use((error, req, res, next) => {
 });
 
 // Start server
-server.listen(PORT, '0.0.0.0', () => {
+server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
   console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
 });

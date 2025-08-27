@@ -28,6 +28,7 @@ REDIS_URL=redis://localhost:6379
 
 # Facebook/Instagram Integration
 # Get from: https://developers.facebook.com/
+# Your Facebook page: https://www.facebook.com/arnous.ex/
 FACEBOOK_ACCESS_TOKEN=your_facebook_page_access_token_here
 FACEBOOK_PAGE_ID=your_facebook_page_id_here
 INSTAGRAM_ACCOUNT_ID=your_instagram_business_account_id_here
@@ -39,6 +40,7 @@ TELEGRAM_CHANNEL_ID=@your_channel_username_or_numeric_id
 
 # WhatsApp Business Integration
 # Get from: Meta Business / WhatsApp Cloud API
+# Your WhatsApp channel: https://whatsapp.com/channel/0029Vb6LYzG3GJP3Ait6uc1e
 WHATSAPP_ACCESS_TOKEN=your_whatsapp_access_token_here
 WHATSAPP_PHONE_NUMBER_ID=your_phone_number_id_here
 WHATSAPP_BROADCAST_LIST_ID=your_broadcast_list_id_here

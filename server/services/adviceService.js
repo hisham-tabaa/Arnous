@@ -359,7 +359,7 @@ class AdviceService {
       socialMedia: {
         facebook: {
           name: 'Facebook',
-          url: 'https://facebook.com/arnous.exchange',
+          url: 'https://www.facebook.com/arnous.ex/',
           icon: 'facebook'
         },
         instagram: {
@@ -374,7 +374,7 @@ class AdviceService {
         },
         whatsapp: {
           name: 'WhatsApp',
-          url: 'https://wa.me/963988123456',
+          url: 'https://whatsapp.com/channel/0029Vb6LYzG3GJP3Ait6uc1e',
           icon: 'whatsapp'
         }
       }
