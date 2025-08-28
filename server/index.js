@@ -1288,40 +1288,40 @@ function generateSocialMediaMessage(currencies, template = 'professional', platf
 \n━━━━━━━━━━━━━━━━━━━━━━━\n`;
 
   let currencySection = '';
-  Object.entries(currencies).forEach(([code, data]) => {
-    const flag = {
-      'USD': '🇺🇸',
-      'EUR': '🇪🇺',
-      'GBP': '🇬🇧',
-      'TRY': '🇹🇷',
-      'JPY': '🇯🇵',
-      'SAR': '🇸🇦',
-      'JOD': '🇯🇴',
-      'KWD': '🇰🇼'
-    }[code] || '💱';
+  
+  // Only show USD and TRY currencies
+  const allowedCurrencies = ['USD', 'TRY'];
+  
+  Object.entries(currencies)
+    .filter(([code]) => allowedCurrencies.includes(code))
+    .sort(([a], [b]) => {
+      // USD first, then TRY
+      if (a === 'USD') return -1;
+      if (b === 'USD') return 1;
+      return 0;
+    })
+    .forEach(([code, data]) => {
+      const flag = {
+        'USD': '🇺🇸',
+        'TRY': '🇹🇷'
+      }[code] || '💱';
 
-    const name = {
-      'USD': 'الدولار الأمريكي',
-      'EUR': 'اليورو الأوروبي',
-      'GBP': 'الجنيه الإسترليني',
-      'TRY': 'الليرة التركية',
-      'JPY': 'الين الياباني',
-      'SAR': 'الريال السعودي',
-      'JOD': 'الدينار الأردني',
-      'KWD': 'الدينار الكويتي'
-    }[code] || code;
+      const name = {
+        'USD': 'الدولار الأمريكي',
+        'TRY': 'الليرة التركية'
+      }[code] || code;
 
-    currencySection += `${flag} ${name}
+      currencySection += `${flag} ${name}
 💰 شراء: ${data.buyRate.toLocaleString('en-US')} ليرة سورية
 💸 بيع: ${data.sellRate.toLocaleString('en-US')} ليرة سورية\n\n`;
-  });
+    });
 
   const footer = `━━━━━━━━━━━━━━━━━━━━━━━
 ⚡ تحديث فوري ودقيق
 📊 أسعار معتمدة وموثقة
 🔄 يتم التحديث بشكل دوري
 
-#أسعار_الصرف #سوريا #دولار #يورو #اقتصاد #مال_وأعمال #تحديث_يومي`;
+#أسعار_الصرف #سوريا #دولار #ليرة_تركية #اقتصاد #مال_وأعمال #تحديث_يومي`;
 
   return baseMessage + currencySection + footer;
 }
