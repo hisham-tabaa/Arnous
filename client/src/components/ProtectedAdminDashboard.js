@@ -44,7 +44,7 @@ const ProtectedAdminDashboard = ({ onLogout }) => {
   const [selectedPlatform, setSelectedPlatform] = useState('general');
   const [notification, setNotification] = useState(null);
   const [connected, setConnected] = useState(false);
-  const [socialModal, setSocialModal] = useState(null);
+
   const [adviceForm, setAdviceForm] = useState({
     title: '',
     content: '',
@@ -87,13 +87,7 @@ const ProtectedAdminDashboard = ({ onLogout }) => {
     setTimeout(() => setNotification(null), 3000);
   };
 
-  const showSocialModal = (data) => {
-    setSocialModal(data);
-  };
 
-  const closeSocialModal = () => {
-    setSocialModal(null);
-  };
 
   const copyToClipboard = async (text) => {
     try {
@@ -488,36 +482,25 @@ const ProtectedAdminDashboard = ({ onLogout }) => {
       // For Facebook, use the current message preview instead of generating new one
       const messageToUse = platform === 'facebook' ? message : await generatePlatformMessage(platform);
       
-      const response = await axios.post(`/api/publish/${platform}`, 
-        { message: messageToUse },
-        { headers: { Authorization: `Bearer ${token}` }}
-      );
+      // Copy message to clipboard first
+      await copyToClipboard(messageToUse);
       
-      // Handle modal response (for all platforms)
-      if (response.data.method === 'modal') {
-        // Show modal with content and instructions
-        showSocialModal({
-          ...response.data,
-          content: response.data.content || messageToUse
-        });
-      } else if (response.data.redirectUrl) {
-        // Handle Facebook redirect (backward compatibility)
-        showSocialModal({
-          platform: 'Facebook',
-          content: response.data.fallbackContent || messageToUse,
-          platformUrl: response.data.redirectUrl,
-          method: 'modal',
-          instructions: [
-            'Copy the content above',
-            'Click "Open Facebook" to go to Facebook',
-            'Paste the content in Facebook\'s post box',
-            'Add any images or additional text if needed',
-            'Click "Post" on Facebook to publish'
-          ]
-        });
-      } else {
-        showNotification(`Successfully published to ${platform}!`);
-      }
+      // Show success notification
+      showNotification(`Content copied! Redirecting to ${platform}...`, 'success');
+      
+      // Direct redirect to platform URLs
+      const platformUrls = {
+        facebook: 'https://www.facebook.com/arnous.ex/',
+        whatsapp: 'https://whatsapp.com/channel/0029Vb6LYzG3GJP3Ait6uc1e',
+        instagram: 'https://www.instagram.com/',
+        telegram: 'https://web.telegram.org/'
+      };
+      
+      // Small delay to show the notification, then redirect
+      setTimeout(() => {
+        window.open(platformUrls[platform], '_blank');
+      }, 1000);
+      
     } catch (error) {
       console.error(`Error publishing to ${platform}:`, error);
       if (error.response?.status === 401) {
@@ -795,10 +778,24 @@ const ProtectedAdminDashboard = ({ onLogout }) => {
             🔄 Update Message Preview
           </button>
           
-          <div className="message-preview">
-            <strong>Message Preview:</strong>
-            <br />
-            {message}
+          <div style={{ marginBottom: '20px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+              <strong>Message Preview:</strong>
+              <button
+                onClick={() => copyToClipboard(message)}
+                className="btn btn-secondary"
+                style={{ 
+                  padding: '8px 16px',
+                  fontSize: '0.9rem',
+                  minWidth: 'auto'
+                }}
+              >
+                📋 Copy Message
+              </button>
+            </div>
+            <div className="message-preview">
+              {message}
+            </div>
           </div>
 
           <div className="social-buttons">
@@ -818,7 +815,7 @@ const ProtectedAdminDashboard = ({ onLogout }) => {
                   ) : (
                     <Icon size={16} />
                   )}
-                  {isPublishing ? 'Publishing...' : `Publish to ${platform.label}`}
+                  {isPublishing ? 'Copying & Redirecting...' : `Copy & Go to ${platform.label}`}
                 </button>
               );
             })}
@@ -1087,163 +1084,7 @@ const ProtectedAdminDashboard = ({ onLogout }) => {
         </div>
       </div>
 
-      {/* Social Media Modal */}
-      {socialModal && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundColor: 'rgba(0, 0, 0, 0.8)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 1000
-        }}>
-          <div style={{
-            backgroundColor: 'white',
-            borderRadius: '15px',
-            padding: '30px',
-            maxWidth: '600px',
-            width: '90%',
-            maxHeight: '80vh',
-            overflow: 'auto'
-          }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-              <h2 style={{ 
-                color: socialModal.platform === 'Facebook' ? '#1877f2' : 
-                       socialModal.platform === 'Instagram' ? '#E4405F' :
-                       socialModal.platform === 'Telegram' ? '#0088cc' :
-                       socialModal.platform === 'WhatsApp' ? '#25D366' : '#333',
-                margin: 0, 
-                display: 'flex', 
-                alignItems: 'center', 
-                gap: '10px' 
-              }}>
-                {socialModal.platform === 'Facebook' && <Facebook size={24} />}
-                {socialModal.platform === 'Instagram' && <Instagram size={24} />}
-                {socialModal.platform === 'Telegram' && <MessageCircle size={24} />}
-                {socialModal.platform === 'WhatsApp' && <Phone size={24} />}
-                Post to {socialModal.platform}
-              </h2>
-              <button 
-                onClick={closeSocialModal}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  fontSize: '24px',
-                  cursor: 'pointer',
-                  color: '#666'
-                }}
-              >
-                ×
-              </button>
-            </div>
-            
-            <div style={{ marginBottom: '20px' }}>
-              <h4 style={{ color: '#333', marginBottom: '10px' }}>📋 Post Content:</h4>
-              <div style={{
-                backgroundColor: '#f8f9fa',
-                border: '1px solid #e9ecef',
-                borderRadius: '8px',
-                padding: '15px',
-                fontSize: '14px',
-                lineHeight: '1.5',
-                whiteSpace: 'pre-wrap',
-                maxHeight: '200px',
-                overflow: 'auto'
-              }}>
-                {socialModal.content}
-              </div>
-            </div>
 
-            <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap' }}>
-              <button
-                onClick={() => copyToClipboard(socialModal.content)}
-                className="btn btn-secondary"
-                style={{ flex: '1 1 200px', minWidth: '150px' }}
-              >
-                📋 Copy Content
-              </button>
-              <button
-                onClick={() => window.open(socialModal.platformUrl, '_blank')}
-                className={`btn ${
-                  socialModal.platform === 'Facebook' ? 'btn-facebook' :
-                  socialModal.platform === 'Instagram' ? 'btn-instagram' :
-                  socialModal.platform === 'Telegram' ? 'btn-telegram' :
-                  socialModal.platform === 'WhatsApp' ? 'btn-whatsapp' : 'btn-primary'
-                }`}
-                style={{ flex: '1 1 200px', minWidth: '150px' }}
-              >
-                {socialModal.platform === 'Facebook' && <Facebook size={16} style={{ marginRight: '8px' }} />}
-                {socialModal.platform === 'Instagram' && <Instagram size={16} style={{ marginRight: '8px' }} />}
-                {socialModal.platform === 'Telegram' && <MessageCircle size={16} style={{ marginRight: '8px' }} />}
-                {socialModal.platform === 'WhatsApp' && <Phone size={16} style={{ marginRight: '8px' }} />}
-                Open {socialModal.platform}
-              </button>
-              
-              {/* Alternative URL buttons for different platforms */}
-              {socialModal.platform === 'Instagram' && socialModal.alternativeUrl && (
-                <button
-                  onClick={() => window.open(socialModal.alternativeUrl, '_blank')}
-                  className="btn btn-instagram"
-                  style={{ flex: '1 1 200px', minWidth: '150px' }}
-                >
-                  📸 Instagram Stories
-                </button>
-              )}
-              
-              {socialModal.platform === 'WhatsApp' && socialModal.alternativeUrl && (
-                <button
-                  onClick={() => window.open(socialModal.alternativeUrl, '_blank')}
-                  className="btn btn-whatsapp"
-                  style={{ flex: '1 1 200px', minWidth: '150px' }}
-                >
-                  💻 WhatsApp Web
-                </button>
-              )}
-              
-              {socialModal.platform === 'Telegram' && socialModal.alternativeUrl && (
-                <button
-                  onClick={() => window.open(socialModal.alternativeUrl, '_blank')}
-                  className="btn btn-telegram"
-                  style={{ flex: '1 1 200px', minWidth: '150px' }}
-                >
-                  🖥️ Telegram Desktop
-                </button>
-              )}
-            </div>
-
-            <div style={{
-              backgroundColor: '#e3f2fd',
-              padding: '15px',
-              borderRadius: '8px',
-              fontSize: '14px',
-              color: '#1565c0'
-            }}>
-              <strong>📝 Instructions:</strong>
-              <ol style={{ margin: '10px 0 0 20px', padding: 0 }}>
-                {socialModal.instructions && socialModal.instructions.map((instruction, index) => (
-                  <li key={index}>{instruction}</li>
-                ))}
-              </ol>
-              {socialModal.note && (
-                <div style={{ 
-                  marginTop: '10px', 
-                  padding: '10px', 
-                  backgroundColor: '#fff3cd', 
-                  color: '#856404',
-                  borderRadius: '5px',
-                  fontSize: '13px'
-                }}>
-                  <strong>💡 Note:</strong> {socialModal.note}
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Notification */}
       {notification && (
