@@ -13,7 +13,7 @@ class InstagramAPI {
   }
 
   generateInstagramModalData(message) {
-    // Instagram posting URLs - use main Instagram page
+    // Instagram posting URLs - use main Instagram page and stories
     const instagramUrl = 'https://www.instagram.com/';
     const instagramStoriesUrl = 'https://www.instagram.com/stories/camera/';
     
@@ -27,11 +27,12 @@ class InstagramAPI {
       instructions: [
         'Copy the content above',
         'Click "Open Instagram" to go to Instagram',
-        'Option 1 - Stories: Click "+" → Story → Create → Add text → Paste content → Share',
-        'Option 2 - Post: Click "+" → Post → Upload image → Add caption → Paste content → Share',
-        'Option 3 - Reels: Click "+" → Reel → Record/Upload → Add caption → Paste content → Share'
+        'For Stories (24h): Click "+" → Story → Create → Add text → Paste content → Share',
+        'For Posts: Click "+" → Post → Upload image → Add caption → Paste content → Share',
+        'For Reels: Click "+" → Reel → Record/Upload → Add caption → Paste content → Share',
+        'Alternative: Use "Instagram Stories" button for quick story posting'
       ],
-      note: 'Instagram requires visual content. Stories are easiest for text-only posts and disappear after 24 hours. For permanent posts, upload an image with your text as caption.'
+      note: 'Instagram requires visual content for posts. Stories are best for text-only content but disappear after 24 hours. For permanent posts, create an image with your text or use it as a caption.'
     };
   }
 

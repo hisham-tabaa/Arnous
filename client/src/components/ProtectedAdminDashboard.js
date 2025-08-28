@@ -1158,11 +1158,11 @@ const ProtectedAdminDashboard = ({ onLogout }) => {
               </div>
             </div>
 
-            <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
+            <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap' }}>
               <button
                 onClick={() => copyToClipboard(socialModal.content)}
                 className="btn btn-secondary"
-                style={{ flex: 1 }}
+                style={{ flex: '1 1 200px', minWidth: '150px' }}
               >
                 📋 Copy Content
               </button>
@@ -1174,7 +1174,7 @@ const ProtectedAdminDashboard = ({ onLogout }) => {
                   socialModal.platform === 'Telegram' ? 'btn-telegram' :
                   socialModal.platform === 'WhatsApp' ? 'btn-whatsapp' : 'btn-primary'
                 }`}
-                style={{ flex: 1 }}
+                style={{ flex: '1 1 200px', minWidth: '150px' }}
               >
                 {socialModal.platform === 'Facebook' && <Facebook size={16} style={{ marginRight: '8px' }} />}
                 {socialModal.platform === 'Instagram' && <Instagram size={16} style={{ marginRight: '8px' }} />}
@@ -1182,13 +1182,35 @@ const ProtectedAdminDashboard = ({ onLogout }) => {
                 {socialModal.platform === 'WhatsApp' && <Phone size={16} style={{ marginRight: '8px' }} />}
                 Open {socialModal.platform}
               </button>
+              
+              {/* Alternative URL buttons for different platforms */}
               {socialModal.platform === 'Instagram' && socialModal.alternativeUrl && (
                 <button
                   onClick={() => window.open(socialModal.alternativeUrl, '_blank')}
                   className="btn btn-instagram"
-                  style={{ flex: 1 }}
+                  style={{ flex: '1 1 200px', minWidth: '150px' }}
                 >
                   📸 Instagram Stories
+                </button>
+              )}
+              
+              {socialModal.platform === 'WhatsApp' && socialModal.alternativeUrl && (
+                <button
+                  onClick={() => window.open(socialModal.alternativeUrl, '_blank')}
+                  className="btn btn-whatsapp"
+                  style={{ flex: '1 1 200px', minWidth: '150px' }}
+                >
+                  💻 WhatsApp Web
+                </button>
+              )}
+              
+              {socialModal.platform === 'Telegram' && socialModal.alternativeUrl && (
+                <button
+                  onClick={() => window.open(socialModal.alternativeUrl, '_blank')}
+                  className="btn btn-telegram"
+                  style={{ flex: '1 1 200px', minWidth: '150px' }}
+                >
+                  🖥️ Telegram Desktop
                 </button>
               )}
             </div>

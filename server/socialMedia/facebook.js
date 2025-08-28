@@ -45,22 +45,24 @@ class FacebookAPI {
   }
 
   generateFacebookRedirectUrl(message) {
-    // Try multiple Facebook URL formats for better compatibility
-    const encodedMessage = encodeURIComponent(message);
-    
-    // Option 1: Facebook's composer URL (works better for text content)
-    const facebookUrl = `https://www.facebook.com/sharer.php?quote=${encodedMessage}&u=`;
-    
-    // Alternative: Use Facebook's intent URL
-    // const facebookUrl = `https://www.facebook.com/intent/compose/?text=${encodedMessage}`;
+    // Direct link to the specific Facebook page
+    const facebookPageUrl = 'https://www.facebook.com/arnous.ex/';
     
     return {
       success: true,
-      method: 'redirect',
-      redirectUrl: facebookUrl,
-      message: 'Redirecting to Facebook with pre-filled content',
-      instructions: 'You will be redirected to Facebook where you can review and publish the post',
-      fallbackContent: message // Include the original message as fallback
+      method: 'modal',
+      platform: 'Facebook',
+      content: message,
+      platformUrl: facebookPageUrl,
+      instructions: [
+        'Copy the content above',
+        'Click "Open Facebook" to go to your Facebook page',
+        'Click "Create Post" or "What\'s on your mind?" box',
+        'Paste the content in the post box',
+        'Add any images or additional text if needed',
+        'Click "Post" to publish'
+      ],
+      note: 'Make sure you are logged in to Facebook and have admin access to the Arnous Exchange page.'
     };
   }
 

@@ -14,26 +14,26 @@ class WhatsAppAPI {
   }
 
   generateWhatsAppModalData(message) {
-    // WhatsApp posting URLs and instructions
-    const whatsappUrl = 'https://web.whatsapp.com/';
-    const whatsappStatusUrl = 'https://web.whatsapp.com/send?text=' + encodeURIComponent(message);
+    // Direct link to the specific WhatsApp channel
+    const whatsappChannelUrl = 'https://whatsapp.com/channel/0029Vb6LYzG3GJP3Ait6uc1e';
+    const whatsappWebUrl = 'https://web.whatsapp.com/';
     
     return {
       success: true,
       method: 'modal',
       platform: 'WhatsApp',
       content: message,
-      platformUrl: whatsappUrl,
-      alternativeUrl: whatsappStatusUrl,
+      platformUrl: whatsappChannelUrl,
+      alternativeUrl: whatsappWebUrl,
       instructions: [
         'Copy the content above',
-        'Click "Open WhatsApp" to go to WhatsApp Web',
-        'For Status: Click Status → Text → Paste content → Share',
-        'For Groups: Select your group → Paste in chat → Send',
-        'For Broadcast: Select Broadcast List → Paste → Send',
-        'For individual contacts: Search contact → Paste → Send'
+        'Click "Open WhatsApp" to go to your WhatsApp channel',
+        'If you have admin access: Click the message input box → Paste content → Send',
+        'Alternative: Use "WhatsApp Web" button → Navigate to your channel → Post',
+        'For Status: Go to Status → Text → Paste content → Share',
+        'For Groups: Select your group → Paste in chat → Send'
       ],
-      note: 'WhatsApp Status posts disappear after 24 hours. For permanent posts, send to groups or broadcast lists.'
+      note: 'Make sure you have admin access to the WhatsApp channel to post updates.'
     };
   }
 

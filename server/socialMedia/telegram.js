@@ -15,6 +15,7 @@ class TelegramAPI {
   generateTelegramModalData(message) {
     // Telegram posting URLs and instructions
     let telegramUrl = 'https://web.telegram.org/';
+    let telegramDesktopUrl = 'https://desktop.telegram.org/';
     
     // If we have a channel ID, try to create a direct link
     if (this.channelId) {
@@ -29,16 +30,17 @@ class TelegramAPI {
       platform: 'Telegram',
       content: message,
       platformUrl: telegramUrl,
+      alternativeUrl: telegramDesktopUrl,
       instructions: [
         'Copy the content above',
         'Click "Open Telegram" to go to your channel',
         'If not redirected to your channel, search for your channel name',
-        'Click in the message input box',
+        'Click in the message input box at the bottom',
         'Paste the content',
         'Add any formatting (bold, italic) if desired',
-        'Press Enter or click Send to publish'
+        'Press Enter or click Send button to publish'
       ],
-      note: 'You can also use Telegram Desktop app or mobile app. Make sure you have admin rights to post in the channel.'
+      note: 'You can also use "Telegram Desktop" button or mobile app. Make sure you have admin rights to post in the channel.'
     };
   }
 
