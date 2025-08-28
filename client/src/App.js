@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import ProtectedAdminDashboard from './components/ProtectedAdminDashboard';
+import DatabaseVerification from './components/DatabaseVerification';
 import Login from './components/Login';
 import UserPage from './components/UserPage';
 import './App.css';
@@ -82,6 +83,14 @@ function App() {
             element={
               isAuthenticated ? 
                 <ProtectedAdminDashboard onLogout={handleLogout} /> : 
+                <Navigate to="/admin/login" replace />
+            } 
+          />
+          <Route 
+            path="/admin/database" 
+            element={
+              isAuthenticated ? 
+                <DatabaseVerification /> : 
                 <Navigate to="/admin/login" replace />
             } 
           />

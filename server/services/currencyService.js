@@ -9,12 +9,19 @@ class CurrencyService {
       const currencies = await Currency.getActiveCurrencies();
       console.log(`📊 CurrencyService: Found ${currencies.length} active currencies`);
       
-      // Return a keyed map for frontend consumption
-      const result = currencies.reduce((acc, currency) => {
+      // Sort currencies with USD first, then alphabetically
+      const sortedCurrencies = currencies.sort((a, b) => {
+        if (a.code === 'USD') return -1;
+        if (b.code === 'USD') return 1;
+        return a.code.localeCompare(b.code);
+      });
+      
+      // Return a keyed map for frontend consumption (maintaining order)
+      const result = {};
+      sortedCurrencies.forEach(currency => {
         const formatted = currency.getFormattedRates();
-        acc[formatted.code] = formatted;
-        return acc;
-      }, {});
+        result[formatted.code] = formatted;
+      });
       
       console.log('📋 CurrencyService: Returning currencies:', Object.keys(result).join(', '));
       return result;
@@ -31,15 +38,22 @@ class CurrencyService {
       const currencies = await Currency.find({ 
         isActive: true, 
         isVisible: true 
-      }).sort({ code: 1 });
+      });
       console.log(`📊 CurrencyService: Found ${currencies.length} visible currencies`);
       
-      // Return a keyed map for frontend consumption
-      const result = currencies.reduce((acc, currency) => {
+      // Sort currencies with USD first, then alphabetically
+      const sortedCurrencies = currencies.sort((a, b) => {
+        if (a.code === 'USD') return -1;
+        if (b.code === 'USD') return 1;
+        return a.code.localeCompare(b.code);
+      });
+      
+      // Return a keyed map for frontend consumption (maintaining order)
+      const result = {};
+      sortedCurrencies.forEach(currency => {
         const formatted = currency.getFormattedRates();
-        acc[formatted.code] = formatted;
-        return acc;
-      }, {});
+        result[formatted.code] = formatted;
+      });
       
       console.log('📋 CurrencyService: Returning visible currencies:', Object.keys(result).join(', '));
       return result;

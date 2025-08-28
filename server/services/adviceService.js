@@ -330,29 +330,29 @@ class AdviceService {
    */
   static getCompanyInfo() {
     return {
-      companyName: 'شركة أرنوس للصرافة',
+      companyName: 'شركة عرنوس للصرافة',
       companyNameEn: 'Arnous Exchange Company',
-      address: 'دمشق - شارع الثورة - مقابل وزارة التجارة الداخلية',
-      addressEn: 'Damascus - Al-Thawra Street - Opposite Ministry of Internal Trade',
-      phone: '+963 11 2233445',
-      mobile: '+963 988 123 456',
-      email: 'info@arnous-exchange.com',
+      address: 'دمشق - شارع بغداد - عين الكرش',
+      addressEn: 'Damascus - Baghdad Street - Ain Al-Karsh',
+      phone: '011 2322767 , 011 2322702',
+      mobile: '+963966106106',
+      email: 'arnous.establishment@hotmail.com',
       website: 'https://arnous-production.up.railway.app',
       workingHours: {
-        ar: 'من السبت إلى الخميس: 9:00 ص - 6:00 م',
-        en: 'Saturday to Thursday: 9:00 AM - 6:00 PM'
+        ar: 'من السبت إلى الخميس: 9:00 ص - 9:00 م',
+        en: 'Saturday to Thursday: 9:00 AM - 9:00 PM'
       },
       services: {
         ar: [
           'صرافة العملات الأجنبية',
           'تحويلات مالية داخلية وخارجية',
-          'خدمات الدفع الإلكتروني',
+          'شام كاش خدمات الدفع الإلكتروني',
           'استشارات مالية'
         ],
         en: [
           'Foreign Currency Exchange',
           'Local & International Money Transfers',
-          'Electronic Payment Services',
+          'Sham Cash Electronic Payment Services',
           'Financial Consulting'
         ]
       },

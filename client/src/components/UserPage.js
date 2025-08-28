@@ -247,7 +247,14 @@ const UserPage = () => {
         </div>
 
         <div className="currency-grid">
-          {Object.keys(currencies).map(currency => {
+          {Object.keys(currencies)
+            .sort((a, b) => {
+              // USD first, then alphabetical
+              if (a === 'USD') return -1;
+              if (b === 'USD') return 1;
+              return a.localeCompare(b);
+            })
+            .map(currency => {
             const info = currencyInfo[currency];
             const data = currencies[currency];
             

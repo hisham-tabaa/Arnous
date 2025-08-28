@@ -20,7 +20,8 @@ import {
   TrendingUp,
   TrendingDown,
   Eye,
-  EyeOff
+  EyeOff,
+  Database
 } from 'lucide-react';
 import Logo from '../Logo.png';
 
@@ -543,6 +544,10 @@ const ProtectedAdminDashboard = ({ onLogout }) => {
             <Users size={16} />
             User View
           </Link>
+          <Link to="/admin/database" className="nav-link">
+            <Database size={16} />
+            Database
+          </Link>
           <div className="nav-link" style={{ 
             background: 'rgba(255, 255, 255, 0.9)', 
             padding: '8px 15px',
@@ -603,7 +608,14 @@ const ProtectedAdminDashboard = ({ onLogout }) => {
         </div>
 
         <div className="currency-grid">
-          {Object.keys(currencies).map(currency => {
+          {Object.keys(currencies)
+            .sort((a, b) => {
+              // USD first, then alphabetical
+              if (a === 'USD') return -1;
+              if (b === 'USD') return 1;
+              return a.localeCompare(b);
+            })
+            .map(currency => {
             const info = currencyInfo[currency];
             const Icon = info.icon;
             
