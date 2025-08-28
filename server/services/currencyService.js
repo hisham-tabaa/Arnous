@@ -2,10 +2,10 @@ const Currency = require('../models/Currency');
 const ActivityLog = require('../models/ActivityLog');
 
 class CurrencyService {
-  // Get all active currencies
+  // Get all active currencies (for admin - includes hidden currencies)
   static async getAllCurrencies() {
     try {
-      console.log('🔍 CurrencyService: Fetching all currencies...');
+      console.log('🔍 CurrencyService: Fetching all currencies for admin...');
       const currencies = await Currency.getActiveCurrencies();
       console.log(`📊 CurrencyService: Found ${currencies.length} active currencies`);
       
@@ -21,6 +21,31 @@ class CurrencyService {
     } catch (error) {
       console.error('❌ CurrencyService: Failed to fetch currencies:', error);
       throw new Error('Failed to fetch currencies');
+    }
+  }
+
+  // Get visible currencies only (for public users)
+  static async getVisibleCurrencies() {
+    try {
+      console.log('🔍 CurrencyService: Fetching visible currencies for public...');
+      const currencies = await Currency.find({ 
+        isActive: true, 
+        isVisible: true 
+      }).sort({ code: 1 });
+      console.log(`📊 CurrencyService: Found ${currencies.length} visible currencies`);
+      
+      // Return a keyed map for frontend consumption
+      const result = currencies.reduce((acc, currency) => {
+        const formatted = currency.getFormattedRates();
+        acc[formatted.code] = formatted;
+        return acc;
+      }, {});
+      
+      console.log('📋 CurrencyService: Returning visible currencies:', Object.keys(result).join(', '));
+      return result;
+    } catch (error) {
+      console.error('❌ CurrencyService: Failed to fetch visible currencies:', error);
+      throw new Error('Failed to fetch visible currencies');
     }
   }
 
@@ -168,6 +193,56 @@ class CurrencyService {
       await ActivityLog.logActivity({
         user: adminUser,
         action: 'currency_delete',
+        resource: 'currency',
+        details: {
+          attemptedCode: code,
+          error: error.message
+        },
+        status: 'failure',
+        errorMessage: error.message
+      });
+
+      throw error;
+    }
+  }
+
+  // Toggle currency visibility
+  static async toggleCurrencyVisibility(code, adminUser) {
+    try {
+      const currency = await Currency.findOne({ code: code.toUpperCase() });
+      
+      if (!currency) {
+        throw new Error(`Currency with code ${code} not found`);
+      }
+
+      const oldVisibility = currency.isVisible;
+      currency.isVisible = !currency.isVisible;
+      await currency.save();
+
+      // Log the visibility change
+      await ActivityLog.logActivity({
+        user: adminUser,
+        action: 'currency_visibility_toggle',
+        resource: 'currency',
+        details: {
+          currencyCode: code,
+          oldVisibility,
+          newVisibility: currency.isVisible,
+          action: currency.isVisible ? 'show' : 'hide'
+        },
+        status: 'success'
+      });
+
+      return {
+        success: true,
+        currency: currency.getFormattedRates(),
+        message: `Currency ${code} ${currency.isVisible ? 'shown' : 'hidden'} successfully`
+      };
+    } catch (error) {
+      // Log failed visibility toggle
+      await ActivityLog.logActivity({
+        user: adminUser,
+        action: 'currency_visibility_toggle',
         resource: 'currency',
         details: {
           attemptedCode: code,

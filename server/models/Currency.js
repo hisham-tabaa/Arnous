@@ -34,6 +34,11 @@ const CurrencySchema = new mongoose.Schema({
     type: Boolean,
     default: true
   },
+  isVisible: {
+    type: Boolean,
+    default: true,
+    index: true
+  },
   lastUpdated: {
     type: Date,
     default: Date.now
@@ -206,7 +211,8 @@ CurrencySchema.methods.getFormattedRates = function() {
     spread: this.spread,
     spreadPercentage: this.spreadPercentage,
     lastUpdated: this.lastUpdated,
-    isActive: this.isActive
+    isActive: this.isActive,
+    isVisible: this.isVisible
   };
 };
 

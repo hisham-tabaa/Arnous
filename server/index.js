@@ -157,10 +157,14 @@ app.get('/api/admin/database/verify',
   requireAdmin,
   async (req, res) => {
     try {
-      console.log('🔍 Admin database verification requested');
+      console.log('🔍 Admin database verification requested by:', req.user?.username);
+      console.log('🔗 Database connection state:', mongoose.connection.readyState);
+      console.log('🏢 Database name:', mongoose.connection.db?.databaseName);
       
       // Get collection information
       const collections = await mongoose.connection.db.listCollections().toArray();
+      console.log(`📋 Found ${collections.length} collections:`, collections.map(c => c.name));
+      
       const collectionInfo = {};
       
       for (const collection of collections) {
@@ -169,6 +173,7 @@ app.get('/api/admin/database/verify',
           name: collection.name,
           documentCount: count
         };
+        console.log(`  📁 ${collection.name}: ${count} documents`);
       }
       
       // Get specific model counts
@@ -177,23 +182,28 @@ app.get('/api/admin/database/verify',
       const activityLogs = await ActivityLog.countDocuments();
       const advice = await Advice.countDocuments();
       
+      console.log(`📊 Model counts - Currencies: ${currencies}, Users: ${users}, ActivityLogs: ${activityLogs}, Advice: ${advice}`);
+      
       // Get sample data
       const sampleCurrencies = await Currency.find({}).limit(5);
       const sampleUsers = await User.find({}).select('username role isActive').limit(5);
       
-      res.json({
+      const response = {
         success: true,
+        timestamp: new Date().toISOString(),
         database: {
           name: mongoose.connection.db.databaseName,
           host: mongoose.connection.host,
-          readyState: mongoose.connection.readyState
+          readyState: mongoose.connection.readyState,
+          readyStateText: mongoose.connection.readyState === 1 ? 'Connected' : 'Disconnected'
         },
         collections: collectionInfo,
         summary: {
           currencies,
           users,
           activityLogs,
-          advice
+          advice,
+          totalCollections: collections.length
         },
         samples: {
           currencies: sampleCurrencies.map(c => ({
@@ -201,7 +211,8 @@ app.get('/api/admin/database/verify',
             name: c.name,
             buyRate: c.buyRate,
             sellRate: c.sellRate,
-            isActive: c.isActive
+            isActive: c.isActive,
+            isVisible: c.isVisible
           })),
           users: sampleUsers.map(u => ({
             username: u.username,
@@ -209,13 +220,18 @@ app.get('/api/admin/database/verify',
             isActive: u.isActive
           }))
         }
-      });
+      };
+      
+      console.log('✅ Database verification completed successfully');
+      res.json(response);
     } catch (error) {
       console.error('❌ Database verification error:', error);
       res.status(500).json({
+        success: false,
         error: 'Database verification failed',
         code: 'VERIFICATION_FAILED',
-        details: error.message
+        details: error.message,
+        timestamp: new Date().toISOString()
       });
     }
   }
@@ -306,18 +322,38 @@ app.post('/api/auth/change-password', verifyToken, logActivity('password_change'
 // Currency routes
 app.get('/api/currencies', async (req, res) => {
   try {
-    console.log('🌐 API: /api/currencies requested');
-    const currencies = await CurrencyService.getAllCurrencies();
-    console.log('✅ API: Currencies fetched successfully, sending response');
+    console.log('🌐 API: /api/currencies requested (public - visible only)');
+    const currencies = await CurrencyService.getVisibleCurrencies();
+    console.log('✅ API: Visible currencies fetched successfully, sending response');
     res.json({ currencies });
   } catch (error) {
-    console.error('❌ API: Error fetching currencies:', error);
+    console.error('❌ API: Error fetching visible currencies:', error);
     res.status(500).json({
       error: 'Failed to fetch currencies',
       code: 'FETCH_FAILED'
     });
   }
 });
+
+// Admin route to get all currencies (including hidden ones)
+app.get('/api/admin/currencies', 
+  verifyToken, 
+  requireAdmin,
+  async (req, res) => {
+    try {
+      console.log('🌐 API: /api/admin/currencies requested (admin - all currencies)');
+      const currencies = await CurrencyService.getAllCurrencies();
+      console.log('✅ API: All currencies fetched successfully for admin, sending response');
+      res.json({ currencies });
+    } catch (error) {
+      console.error('❌ API: Error fetching all currencies for admin:', error);
+      res.status(500).json({
+        error: 'Failed to fetch currencies',
+        code: 'FETCH_FAILED'
+      });
+    }
+  }
+);
 
 app.get('/api/currencies/:code', async (req, res) => {
   try {
@@ -460,6 +496,38 @@ app.delete('/api/currencies/:code',
       res.status(400).json({ 
         error: error.message,
         code: 'DELETION_FAILED'
+      });
+    }
+  }
+);
+
+// Toggle currency visibility
+app.patch('/api/currencies/:code/visibility', 
+  verifyToken, 
+  requireAdmin,
+  logActivity('currency_visibility_toggle', 'currency'),
+  async (req, res) => {
+    try {
+      const { code } = req.params;
+      const result = await CurrencyService.toggleCurrencyVisibility(code, req.user.id);
+      
+      // Emit real-time update to all connected clients
+      // For visibility changes, we need to send updated visible currencies to public users
+      const visibleCurrencies = await CurrencyService.getVisibleCurrencies();
+      const allCurrencies = await CurrencyService.getAllCurrencies();
+      
+      console.log(`📡 Broadcasting visibility change for ${code} to ${io.engine.clientsCount} connected clients`);
+      
+      // Send different data to different user types
+      io.emit('currencyUpdate', visibleCurrencies); // Public users get visible currencies
+      io.emit('adminCurrencyUpdate', allCurrencies); // Admin users get all currencies
+      
+      res.json(result);
+    } catch (error) {
+      console.error('Error toggling currency visibility:', error);
+      res.status(400).json({ 
+        error: error.message,
+        code: 'VISIBILITY_TOGGLE_FAILED'
       });
     }
   }

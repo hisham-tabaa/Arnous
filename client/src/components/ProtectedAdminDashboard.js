@@ -18,20 +18,22 @@ import {
   LogOut,
   User as UserIcon,
   TrendingUp,
-  TrendingDown
+  TrendingDown,
+  Eye,
+  EyeOff
 } from 'lucide-react';
 import Logo from '../Logo.png';
 
 const ProtectedAdminDashboard = ({ onLogout }) => {
   const [currencies, setCurrencies] = useState({
-    USD: { buyRate: '', sellRate: '', lastUpdated: null },
-    EUR: { buyRate: '', sellRate: '', lastUpdated: null },
-    GBP: { buyRate: '', sellRate: '', lastUpdated: null },
-    TRY: { buyRate: '', sellRate: '', lastUpdated: null },
-    JPY: { buyRate: '', sellRate: '', lastUpdated: null },
-    SAR: { buyRate: '', sellRate: '', lastUpdated: null },
-    JOD: { buyRate: '', sellRate: '', lastUpdated: null },
-    KWD: { buyRate: '', sellRate: '', lastUpdated: null }
+    USD: { buyRate: '', sellRate: '', lastUpdated: null, isVisible: true },
+    EUR: { buyRate: '', sellRate: '', lastUpdated: null, isVisible: true },
+    GBP: { buyRate: '', sellRate: '', lastUpdated: null, isVisible: true },
+    TRY: { buyRate: '', sellRate: '', lastUpdated: null, isVisible: true },
+    JPY: { buyRate: '', sellRate: '', lastUpdated: null, isVisible: true },
+    SAR: { buyRate: '', sellRate: '', lastUpdated: null, isVisible: true },
+    JOD: { buyRate: '', sellRate: '', lastUpdated: null, isVisible: true },
+    KWD: { buyRate: '', sellRate: '', lastUpdated: null, isVisible: true }
   });
   
   const [loading, setLoading] = useState(false);
@@ -112,8 +114,10 @@ const ProtectedAdminDashboard = ({ onLogout }) => {
 
     const fetchData = async () => {
       try {
-        // The currencies endpoint is public, so no auth header needed for GET
-        const response = await axios.get('/api/currencies');
+        // Use admin endpoint to get all currencies (including hidden ones)
+        const response = await axios.get('/api/admin/currencies', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
         const fetchedCurrencies = response.data.currencies;
         
         if (fetchedCurrencies) {
@@ -123,7 +127,8 @@ const ProtectedAdminDashboard = ({ onLogout }) => {
               acc[key] = {
                 buyRate: fetchedCurrencies[key].buyRate?.toString() || '',
                 sellRate: fetchedCurrencies[key].sellRate?.toString() || '',
-                lastUpdated: fetchedCurrencies[key].lastUpdated
+                lastUpdated: fetchedCurrencies[key].lastUpdated,
+                isVisible: fetchedCurrencies[key].isVisible
               };
               return acc;
             }, {})
@@ -185,7 +190,25 @@ const ProtectedAdminDashboard = ({ onLogout }) => {
           acc[key] = {
             buyRate: updatedCurrencies[key].buyRate?.toString() || '',
             sellRate: updatedCurrencies[key].sellRate?.toString() || '',
-            lastUpdated: updatedCurrencies[key].lastUpdated
+            lastUpdated: updatedCurrencies[key].lastUpdated,
+            isVisible: updatedCurrencies[key].isVisible !== undefined ? updatedCurrencies[key].isVisible : prev[key]?.isVisible
+          };
+          return acc;
+        }, {})
+      }));
+    });
+
+    newSocket.on('adminCurrencyUpdate', (updatedCurrencies) => {
+      console.log('Received admin currency update:', updatedCurrencies);
+      // Update local currency state with the new data (includes visibility info)
+      setCurrencies(prev => ({
+        ...prev,
+        ...Object.keys(updatedCurrencies).reduce((acc, key) => {
+          acc[key] = {
+            buyRate: updatedCurrencies[key].buyRate?.toString() || '',
+            sellRate: updatedCurrencies[key].sellRate?.toString() || '',
+            lastUpdated: updatedCurrencies[key].lastUpdated,
+            isVisible: updatedCurrencies[key].isVisible
           };
           return acc;
         }, {})
@@ -205,6 +228,21 @@ const ProtectedAdminDashboard = ({ onLogout }) => {
       newSocket.close();
     };
   }, [navigate, handleLogout]);
+
+  // Currency visibility toggle function
+  const toggleCurrencyVisibility = async (currencyCode) => {
+    try {
+      const token = localStorage.getItem('adminToken');
+      const response = await axios.patch(`/api/currencies/${currencyCode}/visibility`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      showNotification(response.data.message, 'success');
+    } catch (error) {
+      console.error('Error toggling currency visibility:', error);
+      showNotification('Error toggling currency visibility', 'error');
+    }
+  };
 
   // Advice management functions
   const fetchAdvice = async () => {
@@ -609,6 +647,40 @@ const ProtectedAdminDashboard = ({ onLogout }) => {
                       min="0"
                     />
                   </div>
+                </div>
+                
+                <div className="visibility-control" style={{ marginTop: '10px' }}>
+                  <button
+                    className={`btn ${currencies[currency].isVisible ? 'btn-warning' : 'btn-success'}`}
+                    onClick={() => toggleCurrencyVisibility(currency)}
+                    style={{ 
+                      fontSize: '12px', 
+                      padding: '5px 10px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '5px'
+                    }}
+                  >
+                    {currencies[currency].isVisible ? (
+                      <>
+                        <EyeOff size={14} />
+                        Hide from Users
+                      </>
+                    ) : (
+                      <>
+                        <Eye size={14} />
+                        Show to Users
+                      </>
+                    )}
+                  </button>
+                  <span style={{ 
+                    fontSize: '11px', 
+                    color: currencies[currency].isVisible ? '#22c55e' : '#ef4444',
+                    marginLeft: '10px',
+                    fontWeight: 'bold'
+                  }}>
+                    {currencies[currency].isVisible ? 'Visible to Public' : 'Hidden from Public'}
+                  </span>
                 </div>
                 
                 {currencies[currency].lastUpdated && (
