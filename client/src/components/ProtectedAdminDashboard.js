@@ -410,8 +410,10 @@ const ProtectedAdminDashboard = ({ onLogout }) => {
         { headers: { Authorization: `Bearer ${token}` }}
       );
       
-      // Refresh data  
-      const response = await axios.get('/api/currencies');
+      // Refresh data using admin endpoint to get all currencies (including hidden ones)
+      const response = await axios.get('/api/admin/currencies', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       const fetchedCurrencies = response.data.currencies;
       
       if (fetchedCurrencies) {
@@ -421,7 +423,8 @@ const ProtectedAdminDashboard = ({ onLogout }) => {
             acc[key] = {
               buyRate: fetchedCurrencies[key].buyRate?.toString() || '',
               sellRate: fetchedCurrencies[key].sellRate?.toString() || '',
-              lastUpdated: fetchedCurrencies[key].lastUpdated
+              lastUpdated: fetchedCurrencies[key].lastUpdated,
+              isVisible: fetchedCurrencies[key].isVisible // Preserve visibility status
             };
             return acc;
           }, {})
